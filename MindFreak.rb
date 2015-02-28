@@ -306,10 +306,10 @@ begin
   INTERPRETER = false
   BYTECODE = false
   RUBY = true
-  RUBY_OUTPUT = 'output.rb'
+  RUBY_OUTPUT = 'freak_output.rb'
   BOUNDS = 500
   # Setup
-  mind = MindFreak.new(IO.read(ARGV[0] || 'mandelbrot.bfk'), BOUNDS)
+  mind = MindFreak.new(IO.read(ARGV[0] || 'mandelbrot.bf'), BOUNDS)
   # Check Syntax
   if mind.check
       # Interpreter
