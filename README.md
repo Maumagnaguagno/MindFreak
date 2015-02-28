@@ -32,7 +32,7 @@ Pointer movement can be a pain, checking a cell nearby and returning to its init
     - ```tape[pointer+1] += 1```
 
 But there is much more to be optimized, sometimes variations and two optimizations at the same time are hard to apply. The solution was to run multiple times the optimizer. I am currently working on the while N case for a cell that is decremented by 1 by each iteration:
-```
+```c
 while(tape[pointer] != 0)
 {
   tape[pointer] -= 1;
@@ -40,7 +40,7 @@ while(tape[pointer] != 0)
 }
 ```
 The optimized version would be:
-```
+```c
 counter = tape[pointer]
 while(counter != 0)
 {
@@ -63,7 +63,7 @@ Compatibility should not be a problem for a limited instruction set, but differe
 ### Support
 - Unbounded cell value
 - Bounded (fast Array) ou unbounded tape (slow Hash)
-- Interpret +-><.,[] as commands, the rest as comments
+- Interpret **+ - > < . , [ ]** as commands, the rest as comments
 - Check brackets before execution
 - Output tape when interrupted (for interpreted modes, not for Ruby's eval)
 - Bytecode mode (faster than executing what the user provided)
