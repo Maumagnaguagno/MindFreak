@@ -300,12 +300,13 @@ class MindFreak
   # Run C
   #-----------------------------------------------
 
-  def run_c
+  def run_c(name = 'mindfreak', flags = '-O2')
     make_bytecode(true)
-    # Tape definition
-    @code = "#include <stdio.h>\n\nint main()\n{"
-    @code << "\n  unsigned int tape[#{@bounded_tape}] = {0};"
-    @code << "\n  unsigned int *pointer = tape;"
+    # Header
+    @code = "#include <stdio.h>
+int main(){
+  unsigned int tape[#{@bounded_tape}] = {0};
+  unsigned int *pointer = tape;"
     indent = '  '
     # Match bytecode
     @bytecode.each {|c,arg,offset,set|
@@ -316,12 +317,12 @@ class MindFreak
         @code << "\n#{indent}pointer += #{arg};"
       when WRITE # Write
         c = "putchar(*(pointer#{"+#{offset}" if offset}));"
-        @code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i){#{c}}" : c}"
+        @code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
       when READ # Read
         c = "(*(pointer#{"+#{offset}" if offset})) = getchar();"
-        @code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) {#{c}}" : c}"
+        @code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
       when JUMP # Jump if zero
-        @code << "\n#{indent}while(*pointer)\n#{indent}{"
+        @code << "\n#{indent}while(*pointer){"
         indent << '  '
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
@@ -329,11 +330,13 @@ class MindFreak
       end
     }
     @code << "\n  return 0;\n}"
-    File.open('mindfreak.c','w') {|file| file << @code}
-    system("gcc mindfreak.c -o mindfreak.exe -O2")
+    File.open("#{name}.c",'w') {|file| file << @code}
+    system("gcc #{name}.c -o #{name}.exe #{flags}")
     t = Time.now.to_f
-    system("mindfreak.exe")
+    system("#{name}.exe")
     puts "\nTime: #{Time.now.to_f - t}s"
+    File.delete("#{name}.c")
+    File.delete("#{name}.exe")
   end
 end
 
