@@ -1,7 +1,7 @@
 # MindFreak
 A BrainFuck interpreter with bytecode support and language converter
 
-Started this project during October 2013 to see something easy to parse for a change. The goals was to understand how much could be optimized from the source. Ended up discovering a lot of crazy ideas about bytecode and macro optimizations. Really fun to do in a weekend, would take a lifetime to master though.
+Started this project during October 2013 to see something easy to parse for a change. The goals was to understand how much could be optimized from the source. Ended up discovering a lot of crazy ideas about bytecode and macro optimizations. Really fun to do in a weekend, would take a lifetime to master though. Most of my work was inspired by [Nayuki] and the awesome implementation of a Mandelbrot fractal by Erik Bosman.
 
 ### What is this?
 BrainFuck is a simple language with almost the minimal set of instructions somebody needs to do anything. The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape. You only have access to this set of instructions:
@@ -41,3 +41,5 @@ And different implementations of the limits make it even more complex(bold is th
 - Interactive mode
 - Use input tape or keyboard to deal with inputs
 - Tests
+
+[Nayuki]:http://www.nayuki.io/page/optimizing-brainfuck-compiler
