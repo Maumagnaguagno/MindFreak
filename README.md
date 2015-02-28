@@ -1,5 +1,5 @@
 # MindFreak
-A BrainFuck interpreter with bytecode support and language converter
+A BrainFuck interpreter with bytecode support and language converter :scream:
 
 Started this project during October 2013 to see something easy to parse for a change. The goal was to understand how much could be optimized from the source. Ended up discovering a lot of crazy ideas about bytecode and macro optimizations. Really fun to do in a weekend, but do not let the funny name fool you, would take a lifetime to master. Most of my work was inspired by [Nayuki] and the awesome implementation of a Mandelbrot fractal generator by Erik Bosman.
 
@@ -54,7 +54,7 @@ tape[pointer] = 0
 
 ### Compatibility
 Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex (in bold the ones supported by this project):
-- Size of cell (bit, byte, word, other fixed size, **unbounded**)
+- Size of cell (bit, byte, **word**, other fixed size, **unbounded**)
 - Size of tape (**pre-allocated**, **allocated as required**)
 - How the input happens (file, **read from terminal**)
 - How the output happens (file, **write to terminal**)
@@ -68,11 +68,14 @@ Compatibility should not be a problem for a limited instruction set, but differe
 - Output tape when interrupted (for interpreted modes, not for Ruby's eval)
 - Bytecode mode (faster than executing what the user provided)
 - Ruby Mode (transform bytecode to ruby and eval to get even more speed)
+- The C mode works like the Ruby one, but cells are limited to **unsigned int**
 
 ### ToDo's
 - Debug System, verbose, step-by-step, breakpoint
 - Interactive mode
 - Optional input tape to deal with inputs (faster testing)
+- Find more problems
+- Make it API friendly
 - Tests
 
 [Nayuki]:http://www.nayuki.io/page/optimizing-brainfuck-compiler
