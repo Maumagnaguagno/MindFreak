@@ -139,7 +139,7 @@ class MindFreak
   # Make bytecode
   #-----------------------------------------------
 
-  def make_bytecode
+  def make_bytecode(optimize)
     @bytecode = []
     jump_stack = []
     # Compress
@@ -171,6 +171,8 @@ class MindFreak
         index += 1
       end
     }
+    puts "Bytecode original size: #{@bytecode.size}"
+    optimization if optimize
   end
 
   #-----------------------------------------------
@@ -178,7 +180,6 @@ class MindFreak
   #-----------------------------------------------
 
   def optimization(level = 3)
-    puts "Bytecode original size: #{@bytecode.size}"
     loop {
       stable = true
       i = 0
@@ -195,18 +196,19 @@ class MindFreak
             @bytecode.slice!(i+1,2)
           end
           stable = false
-        # Loop multiplication
 =begin
+        # Loop multiplication
         elsif @bytecode[i].first == JUMP and @bytecode[i+1] == [INCREMENT,-1]
-          j = i+2
+          j = i + 2
           j += 1 while @bytecode[j].first == INCREMENT
-          j -= 1
           if @bytecode[j].first == JUMPBACK
+            j -= 1
             puts 'MULTIPLY'
             @bytecode.slice!(i,2)
             @bytecode.slice!(j)
             (i+2).upto(j) {|k| @bytecode[k] = [MULTIPLY,0]}
           end
+          stable = false
 =end
         # Pointer movement >+< <.>
         elsif @bytecode[i].first == BACKWARD and (@bytecode[i+1].first == INCREMENT or @bytecode[i+1].first == WRITE) and @bytecode[i+2].first == BACKWARD
@@ -231,7 +233,7 @@ class MindFreak
   #-----------------------------------------------
 
   def run_bytecode
-    make_bytecode
+    make_bytecode(false)
     if @bounded_tape
       @tape.fill(0)
     else
@@ -263,38 +265,75 @@ class MindFreak
   # Run Ruby
   #-----------------------------------------------
 
-  def run_ruby(output = nil, optimize = true)
-    make_bytecode
-    # Optimizations
-    optimization if optimize
+  def run_ruby(output = nil)
+    make_bytecode(true)
     # Tape definition
     @rubycode = @bounded_tape ? "tape = Array.new(#{@bounded_tape},0)" : "tape = Hash.new(0)"
     @rubycode << "\npointer = 0"
-    # Pretty print
-    ident = '  '
-    level = 0
-    # Match each bytecode
+    indent = ''
+    # Match bytecode
     @bytecode.each {|c,arg,offset,set|
       case c
       when INCREMENT # Tape
-        @rubycode << "\n#{ident * level}tape[pointer#{offset ? "+#{offset}]" : ']'} #{set ? '=' : '+='} #{arg}"
+        @rubycode << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
       when BACKWARD # Pointer
-        @rubycode << "\n#{ident * level}pointer += #{arg}"
+        @rubycode << "\n#{indent}pointer += #{arg}"
       when WRITE # Write
-        c = "putc(tape[pointer" << (offset ? "+#{offset}])" : '])')
-        @rubycode << "\n#{ident * level}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+        c = "putc(tape[pointer#{"+#{offset}" if offset}])"
+        @rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when READ # Read
-        @rubycode << "\n#{ident * level}#{arg > 1 ? "#{arg}.times {tape[pointer] = gets[0].ord}" : 'tape[pointer] = gets[0].ord'}"
+        c = "tape[pointer#{"+#{offset}" if offset}] = gets[0].ord"
+        @rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when JUMP # Jump if zero
-        @rubycode << "\n#{ident * level}until tape[pointer].zero?"
-        level += 1
+        @rubycode << "\n#{indent}until tape[pointer].zero?"
+        indent << '  '
       when JUMPBACK # Return unless zero
-        level -= 1
-        @rubycode << "\n#{ident * level}end"
+        indent.slice!(0,2)
+        @rubycode << "\n#{indent}end"
       end
     }
     File.open(output,'w') {|file| file << @rubycode} if output
     eval(@rubycode)
+  end
+
+  #-----------------------------------------------
+  # Run C
+  #-----------------------------------------------
+
+  def run_c
+    make_bytecode(true)
+    # Tape definition
+    @code = "#include <stdio.h>\n\nint main()\n{"
+    @code << "\n  unsigned int tape[#{@bounded_tape}] = {0};"
+    @code << "\n  unsigned int *pointer = tape;"
+    indent = '  '
+    # Match bytecode
+    @bytecode.each {|c,arg,offset,set|
+      case c
+      when INCREMENT # Tape
+        @code << "\n#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless set}= #{arg};"
+      when BACKWARD # Pointer
+        @code << "\n#{indent}pointer += #{arg};"
+      when WRITE # Write
+        c = "putchar(*(pointer#{"+#{offset}" if offset}));"
+        @code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i){#{c}}" : c}"
+      when READ # Read
+        c = "(*(pointer#{"+#{offset}" if offset})) = getchar();"
+        @code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) {#{c}}" : c}"
+      when JUMP # Jump if zero
+        @code << "\n#{indent}while(*pointer)\n#{indent}{"
+        indent << '  '
+      when JUMPBACK # Return unless zero
+        indent.slice!(0,2)
+        @code << "\n#{indent}}"
+      end
+    }
+    @code << "\n  return 0;\n}"
+    File.open('mindfreak.c','w') {|file| file << @code}
+    system("gcc mindfreak.c -o mindfreak.exe -O2")
+    t = Time.now.to_f
+    system("mindfreak.exe")
+    puts "\nTime: #{Time.now.to_f - t}s"
   end
 end
 
@@ -305,11 +344,13 @@ begin
   # Mode
   INTERPRETER = false
   BYTECODE = false
-  RUBY = true
+  RUBY = false
+  C = true
   RUBY_OUTPUT = 'freak_output.rb'
   BOUNDS = 500
+  filename = ARGV[0] || 'mandelbrot.bf'
   # Setup
-  mind = MindFreak.new(IO.read(ARGV[0] || 'mandelbrot.bf'), BOUNDS)
+  mind = MindFreak.new(IO.read(filename), BOUNDS)
   # Check Syntax
   if mind.check
       # Interpreter
@@ -336,13 +377,19 @@ begin
       t = Time.now.to_f
       mind.run_ruby(RUBY_OUTPUT)
       puts "\nTime: #{Time.now.to_f - t}s"
+      puts '-' * 100
+    end
+    # C
+    if C
+      puts 'C Mode',''
+      mind.run_c
     end
   # Ops
   else
     puts 'Unbalanced brackets... tsc tsc...'
   end
 rescue Interrupt
-  puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" unless RUBY
+  puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" unless RUBY or C
 rescue
   puts $!, $@
   STDIN.gets
