@@ -70,6 +70,11 @@ Compatibility should not be a problem for a limited instruction set, but differe
 - Ruby Mode (transform bytecode to ruby and eval to get even more speed)
 - The C mode works like the Ruby one, but cells are limited to **unsigned int**
 
+### Execution
+```
+ruby MindFreak.rb [filename]
+```
+
 ### ToDo's
 - Debug System, verbose, step-by-step, breakpoint
 - Interactive mode
