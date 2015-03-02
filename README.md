@@ -1,5 +1,5 @@
 # MindFreak
-A BrainFuck interpreter with bytecode support and language converter :scream:
+A BrainFuck interpreter with bytecode and language conversion
 
 Started this project during October 2013 to see something easy to parse for a change. The goal was to understand how much could be optimized from the source. Ended up discovering a lot of crazy ideas about bytecode and macro optimizations. Really fun to do in a weekend, but do not let the funny name fool you, would take a lifetime to master. Most of my work was inspired by [Nayuki] and the awesome implementation of a Mandelbrot fractal generator by Erik Bosman.
 
