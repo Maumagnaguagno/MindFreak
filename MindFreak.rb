@@ -358,7 +358,7 @@ begin
   mind = MindFreak.new(IO.read(filename), BOUNDS)
   # Check Syntax
   if mind.check
-      # Interpreter
+    # Interpreter
     if INTERPRETER
       puts 'Interpreter Mode',''
       t = Time.now.to_f
@@ -390,8 +390,7 @@ begin
       mind.run_c
     end
   # Ops
-  else
-    puts 'Unbalanced brackets... tsc tsc...'
+  else puts 'Unbalanced brackets... tsc tsc...'
   end
 rescue Interrupt
   puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" unless RUBY or C
