@@ -40,7 +40,7 @@ class MindFreak
   JUMP      = ?[.ord
   JUMPBACK  = ?].ord
 
-  MULTIPLY  = '*'.ord
+  MULTIPLY  = ?*.ord
 
   attr_reader :program, :bytecode, :rubycode, :tape, :pointer
 
@@ -54,11 +54,9 @@ class MindFreak
     @program.gsub!(/[^+-><.,\[\]]/,'')
     # Bounded
     if bounded_tape.is_a?(Fixnum) and bounded_tape > 0
-      @tape = Array.new(bounded_tape, 0)
-      @bounded_tape = bounded_tape
+      @tape = Array.new(@bounded_tape = bounded_tape, 0)
     # Infinity tape
-    else
-      @tape = Hash.new(0)
+    else @tape = Hash.new(0)
     end
   end
 
@@ -87,8 +85,7 @@ class MindFreak
   def run_interpreter
     if @bounded_tape
       @tape.fill(0)
-    else
-      @tape.clear
+    else @tape.clear
     end
     @program_counter = @pointer = @control = 0
     # Intepreter
@@ -238,8 +235,7 @@ class MindFreak
     make_bytecode(false)
     if @bounded_tape
       @tape.fill(0)
-    else
-      @tape.clear
+    else @tape.clear
     end
     @program_counter = @pointer = @control = 0
     # Execute
@@ -305,10 +301,7 @@ class MindFreak
   def run_c(name = 'mindfreak', flags = '-O2')
     make_bytecode(true)
     # Header
-    @code = "#include <stdio.h>
-int main(){
-  unsigned int tape[#{@bounded_tape}] = {0};
-  unsigned int *pointer = tape;"
+    @code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{@bounded_tape}] = {0};\n  unsigned int *pointer = tape;"
     indent = '  '
     # Match bytecode
     @bytecode.each {|c,arg,offset,set|
@@ -346,54 +339,47 @@ end
 # Main
 #-----------------------------------------------
 begin
-  # Mode
-  INTERPRETER = false
-  BYTECODE = false
-  RUBY = false
-  C = true
-  RUBY_OUTPUT = 'freak_output.rb'
-  BOUNDS = 500
+  # Input
   filename = ARGV[0] || 'mandelbrot.bf'
+  mode = ARGV[1] || 'rb'
+  ruby_output = ARGV[2] || 'freak_output.rb' if mode == 'rb'
+  bounds = 500
   # Setup
-  mind = MindFreak.new(IO.read(filename), BOUNDS)
+  mind = MindFreak.new(IO.read(filename), bounds)
   # Check Syntax
   if mind.check
-    # Interpreter
-    if INTERPRETER
+    # Execute
+    case mode
+    when 'interpreter'
       puts 'Interpreter Mode',''
       t = Time.now.to_f
       mind.run_interpreter
       puts "\nTime: #{Time.now.to_f - t}s"
       puts "\nTape:", mind.tape.inspect
       puts '-' * 100
-    end
-    # Bytecode
-    if BYTECODE
+    when 'bytecode'
       puts 'Bytecode Mode',''
       t = Time.now.to_f
       mind.run_bytecode
       puts "\nTime: #{Time.now.to_f - t}s"
       puts "\nTape:", mind.tape.inspect
       puts '-' * 100
-    end
-    # Ruby
-    if RUBY
+    when 'rb'
       puts 'Ruby Mode',''
       t = Time.now.to_f
-      mind.run_ruby(RUBY_OUTPUT)
+      mind.run_ruby(ruby_output)
       puts "\nTime: #{Time.now.to_f - t}s"
       puts '-' * 100
-    end
-    # C
-    if C
+    when 'c'
       puts 'C Mode',''
       mind.run_c
+    else raise 'Mode not found'
     end
   # Ops
   else puts 'Unbalanced brackets... tsc tsc...'
   end
 rescue Interrupt
-  puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" unless RUBY or C
+  puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" if mode == 'interpreter' or mode == 'bytecode'
 rescue
   puts $!, $@
   STDIN.gets

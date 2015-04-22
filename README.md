@@ -1,10 +1,16 @@
 # MindFreak
 A BrainFuck interpreter with bytecode and language conversion
 
-Started this project during October 2013 to see something easy to parse for a change. The goal was to understand how much could be optimized from the source. Ended up discovering a lot of crazy ideas about bytecode and macro optimizations. Really fun to do in a weekend, but do not let the funny name fool you, would take a lifetime to master. Most of my work was inspired by [Nayuki] and the awesome implementation of a Mandelbrot fractal generator by Erik Bosman.
+Started this project during October 2013 to see something easy to parse for a change.
+The goal was to understand how much could be optimized from the source.
+Ended up discovering a lot of crazy ideas about bytecode and macro optimizations.
+Really fun to do in a weekend, but do not let the funny name fool you, would take a lifetime to master.
+Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) and the awesome implementation of a Mandelbrot fractal generator by Erik Bosman.
 
-### What is this language?
-BrainFuck is a simple language with almost the minimal set of instructions somebody needs to do anything. The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape. You only have access to this set of instructions:
+### What is BrainFuck?
+BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
+The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape.
+You only have access to this set of instructions:
 - **>** 	move pointer to the right ```pointer += 1```
 - **<** 	move pointer to the left ```pointer -= 1```
 - **+** 	increment value of cell ```tape[pointer] += 1```
@@ -31,7 +37,9 @@ Pointer movement can be a pain, checking a cell nearby and returning to its init
   - ```pointer += 1; tape[pointer] += 1; pointer -= 1```
     - ```tape[pointer+1] += 1```
 
-But there is much more to be optimized, sometimes variations and two optimizations at the same time are hard to apply. The solution was to run multiple times the optimizer. I am currently working on the while N case for a cell that is decremented by 1 by each iteration:
+But there is much more to be optimized, sometimes variations and two optimizations at the same time are hard to apply.
+The solution was to run multiple times the optimizer.
+I am currently working on the while N case for a cell that is decremented by 1 by each iteration:
 ```c
 while(tape[pointer] != 0)
 {
@@ -45,15 +53,19 @@ counter = tape[pointer]
 while(counter != 0)
 {
   counter -= 1
-  
+  ...
 }
 tape[pointer] = 0
 ```
 
-[Nayuki] has even more optimizations! Which is awesome and sad at the same time, maybe I will never have time to implement them all.
+[Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) has even more optimizations!
+Which is awesome and sad at the same time, maybe I will never have time to implement them all.
+Since I can output C code we can expect GCC to solve this problem for us.
 
 ### Compatibility
-Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex (in bold the ones supported by this project):
+
+Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex to support.
+In bold the limits supported by this project:
 - Size of cell (bit, byte, **word**, other fixed size, **unbounded**)
 - Size of tape (**pre-allocated**, **allocated as required**)
 - How the input happens (file, **read from terminal**)
@@ -61,6 +73,7 @@ Compatibility should not be a problem for a limited instruction set, but differe
 - Unknown instructions (**ignore**, halt, extended instructions)
 
 ### Support
+
 - Unbounded cell value
 - Bounded (fast Array) ou unbounded tape (slow Hash)
 - Interpret **+ - > < . , [ ]** as commands, the rest as comments
@@ -71,9 +84,16 @@ Compatibility should not be a problem for a limited instruction set, but differe
 - The C mode works like the Ruby one, but cells are limited to **unsigned int**
 
 ### Execution
+
 ```
-ruby MindFreak.rb [filename]
+ruby MindFreak.rb [filename] [interpreter|bytecode|rb|c] [ruby_output]
 ```
+
+The current implementation expects the brainfuck filename, execution mode and a ruby output filename (for rb mode).
+The C mode is the fastest, but requires GCC in your path.
+The tape is bounded by default to 500 cells, make it ```nil``` in the code to support any size.
+An unbounded tape is slower an C mode requires a bounded tape, as no Hash is currently supported.
+The main of this project is just an example of the API, you can run all modes in sequence without the need to create a new MindFreak object.
 
 ### ToDo's
 - Debug System, verbose, step-by-step, breakpoint
@@ -82,5 +102,3 @@ ruby MindFreak.rb [filename]
 - Find more problems
 - Make it API friendly
 - Tests
-
-[Nayuki]:http://www.nayuki.io/page/optimizing-brainfuck-compiler
