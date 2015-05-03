@@ -86,13 +86,13 @@ In bold the limits supported by this project:
 ### Execution
 
 ```
-ruby MindFreak.rb [filename] [interpreter|bytecode|rb|c] [ruby_output]
+ruby MindFreak.rb [filename] [interpreter|bytecode|rb|c] [bounds]
 ```
 
-The current implementation expects the brainfuck filename, execution mode and a ruby output filename (for rb mode).
+The current implementation expects the brainfuck filename, execution mode and tape bounds.
 The C mode is the fastest, but requires GCC in your path.
-The tape is bounded by default to 500 cells, make it ```nil``` in the code to support any size.
-An unbounded tape is slower an C mode requires a bounded tape, as no Hash is currently supported.
+The tape is bounded by default to 500 cells, make it nil to support any size.
+An unbounded tape is slower and Ruby and C modes requires a bounded tape, as no Hash is currently supported.
 The main of this project is just an example of the API, you can run all modes in sequence without the need to create a new MindFreak object.
 
 ### ToDo's

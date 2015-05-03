@@ -263,7 +263,7 @@ class MindFreak
   # Run Ruby
   #-----------------------------------------------
 
-  def run_ruby(output = nil)
+  def run_ruby
     make_bytecode(true)
     # Tape definition
     @rubycode = @bounded_tape ? "tape = Array.new(#{@bounded_tape},0)" : "tape = Hash.new(0)"
@@ -290,7 +290,7 @@ class MindFreak
         @rubycode << "\n#{indent}end"
       end
     }
-    File.open(output,'w') {|file| file << @rubycode} if output
+    File.open("#{filename}.rb",'w') {|file| file << @rubycode}
     eval(@rubycode)
   end
 
@@ -338,49 +338,57 @@ end
 #-----------------------------------------------
 # Main
 #-----------------------------------------------
-begin
-  # Input
-  filename = ARGV[0] || 'mandelbrot.bf'
-  mode = ARGV[1] || 'rb'
-  ruby_output = ARGV[2] || 'freak_output.rb' if mode == 'rb'
-  bounds = 500
-  # Setup
-  mind = MindFreak.new(IO.read(filename), bounds)
-  # Check Syntax
-  if mind.check
-    # Execute
-    case mode
-    when 'interpreter'
-      puts 'Interpreter Mode',''
-      t = Time.now.to_f
-      mind.run_interpreter
-      puts "\nTime: #{Time.now.to_f - t}s"
-      puts "\nTape:", mind.tape.inspect
-      puts '-' * 100
-    when 'bytecode'
-      puts 'Bytecode Mode',''
-      t = Time.now.to_f
-      mind.run_bytecode
-      puts "\nTime: #{Time.now.to_f - t}s"
-      puts "\nTape:", mind.tape.inspect
-      puts '-' * 100
-    when 'rb'
-      puts 'Ruby Mode',''
-      t = Time.now.to_f
-      mind.run_ruby(ruby_output)
-      puts "\nTime: #{Time.now.to_f - t}s"
-      puts '-' * 100
-    when 'c'
-      puts 'C Mode',''
-      mind.run_c
-    else raise 'Mode not found'
+if $0 == __FILE__
+  begin
+    # Help
+    if ARGV.first == '-h'
+      puts "#$0 [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=500|<int>|nil]"
+    else
+      # Input
+      filename = ARGV[0] || 'mandelbrot.bf'
+      mode = ARGV[1] || 'interpreter'
+      if ARGV[2]
+        if ARGV[2] == 'nil'
+          raise 'Tape must be bounded for C mode' if mode == 'rb'
+          bounds = nil
+        else bounds = ARGV[2].to_i
+        end
+      else bounds = 500
+      end
+      # Setup
+      mind = MindFreak.new(IO.read(filename), bounds)
+      # Check Syntax
+      if mind.check
+        # Execute
+        case mode
+        when 'interpreter'
+          puts 'Interpreter Mode',''
+          t = Time.now.to_f
+          mind.run_interpreter
+          puts "\nTime: #{Time.now.to_f - t}s",'Tape:', mind.tape.inspect, '-' * 100
+        when 'bytecode'
+          puts 'Bytecode Mode',''
+          t = Time.now.to_f
+          mind.run_bytecode
+          puts "\nTime: #{Time.now.to_f - t}s",'Tape:', mind.tape.inspect, '-' * 100
+        when 'rb'
+          puts 'Ruby Mode',''
+          t = Time.now.to_f
+          mind.run_ruby
+          puts "\nTime: #{Time.now.to_f - t}s", '-' * 100
+        when 'c'
+          puts 'C Mode',''
+          mind.run_c
+        else raise 'Mode not found'
+        end
+      # Ops
+      else puts 'Unbalanced brackets... tsc tsc...'
+      end
     end
-  # Ops
-  else puts 'Unbalanced brackets... tsc tsc...'
+  rescue Interrupt
+    puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" if mode == 'interpreter' or mode == 'bytecode'
+  rescue
+    puts $!, $@
+    STDIN.gets
   end
-rescue Interrupt
-  puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" if mode == 'interpreter' or mode == 'bytecode'
-rescue
-  puts $!, $@
-  STDIN.gets
 end
