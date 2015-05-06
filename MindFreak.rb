@@ -349,7 +349,7 @@ if $0 == __FILE__
       mode = ARGV[1] || 'interpreter'
       if ARGV[2]
         if ARGV[2] == 'nil'
-          raise 'Tape must be bounded for C mode' if mode == 'rb'
+          raise 'Tape must be bounded for C mode' if mode == 'c'
           bounds = nil
         else bounds = ARGV[2].to_i
         end
