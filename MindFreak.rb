@@ -83,10 +83,7 @@ class MindFreak
   #-----------------------------------------------
 
   def run_interpreter
-    if @bounded_tape
-      @tape.fill(0)
-    else @tape.clear
-    end
+    @bounded_tape ? @tape.fill(0) : @tape.clear
     @program_counter = @pointer = @control = 0
     # Intepreter
     until @program_counter == @program.size
@@ -129,6 +126,7 @@ class MindFreak
             end
           end
         end
+      else raise 'Unknown instruction'
       end
       @program_counter += 1
     end
@@ -170,7 +168,7 @@ class MindFreak
         index += 1
       end
     }
-    puts "Bytecode original size: #{@bytecode.size}"
+    puts "Bytecode size: #{@bytecode.size}"
     optimization if optimize
   end
 
@@ -232,11 +230,9 @@ class MindFreak
   #-----------------------------------------------
 
   def run_bytecode
+    # Bytecode interpreter does not support optimizations
     make_bytecode(false)
-    if @bounded_tape
-      @tape.fill(0)
-    else @tape.clear
-    end
+    @bounded_tape ? @tape.fill(0) : @tape.clear
     @program_counter = @pointer = @control = 0
     # Execute
     until @program_counter == @bytecode.size
@@ -254,6 +250,7 @@ class MindFreak
         @program_counter = arg if @tape[@pointer].zero?
       when JUMPBACK # Return unless zero
         @program_counter = arg unless @tape[@pointer].zero?
+      else raise 'Unknown bytecode'
       end
       @program_counter += 1
     end
@@ -288,6 +285,7 @@ class MindFreak
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
         @rubycode << "\n#{indent}end"
+      else raise 'Unknown bytecode'
       end
     }
     File.open("#{filename}.rb",'w') {|file| file << @rubycode}
@@ -299,6 +297,7 @@ class MindFreak
   #-----------------------------------------------
 
   def run_c(name = 'mindfreak', flags = '-O2')
+    raise 'Tape must be bounded for C mode' unless @bounded_tape
     make_bytecode(true)
     # Header
     @code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{@bounded_tape}] = {0};\n  unsigned int *pointer = tape;"
@@ -322,6 +321,7 @@ class MindFreak
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
         @code << "\n#{indent}}"
+      else raise 'Unknown bytecode'
       end
     }
     @code << "\n  return 0;\n}"
@@ -347,14 +347,7 @@ if $0 == __FILE__
       # Input
       filename = ARGV[0] || 'mandelbrot.bf'
       mode = ARGV[1] || 'interpreter'
-      if ARGV[2]
-        if ARGV[2] == 'nil'
-          raise 'Tape must be bounded for C mode' if mode == 'c'
-          bounds = nil
-        else bounds = ARGV[2].to_i
-        end
-      else bounds = 500
-      end
+      bounds = ARGV[2] ? ARGV[2] == 'nil' ? nil : ARGV[2].to_i : 500
       # Setup
       mind = MindFreak.new(IO.read(filename), bounds)
       # Check Syntax
