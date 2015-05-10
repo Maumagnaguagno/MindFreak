@@ -54,7 +54,7 @@ class MindFreak
     @program.gsub!(/[^+-><.,\[\]]/,'')
     # Bounded
     if bounded_tape.is_a?(Fixnum) and bounded_tape > 0
-      @tape = Array.new(@bounded_tape = bounded_tape, 0)
+      @tape = Array.new(bounded_tape, 0)
     # Infinity tape
     else @tape = Hash.new(0)
     end
@@ -83,7 +83,7 @@ class MindFreak
   #-----------------------------------------------
 
   def run_interpreter
-    @bounded_tape ? @tape.fill(0) : @tape.clear
+    @tape.instance_of?(Array) ? @tape.fill(0) : @tape.clear
     @program_counter = @pointer = @control = 0
     # Intepreter
     until @program_counter == @program.size
@@ -232,7 +232,7 @@ class MindFreak
   def run_bytecode
     # Bytecode interpreter does not support optimizations
     make_bytecode(false)
-    @bounded_tape ? @tape.fill(0) : @tape.clear
+    @tape.instance_of?(Array) ? @tape.fill(0) : @tape.clear
     @program_counter = @pointer = @control = 0
     # Execute
     until @program_counter == @bytecode.size
@@ -263,7 +263,7 @@ class MindFreak
   def run_ruby
     make_bytecode(true)
     # Tape definition
-    @rubycode = @bounded_tape ? "tape = Array.new(#{@bounded_tape},0)" : "tape = Hash.new(0)"
+    @rubycode = @tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : "tape = Hash.new(0)"
     @rubycode << "\npointer = 0"
     indent = ''
     # Match bytecode
@@ -297,10 +297,10 @@ class MindFreak
   #-----------------------------------------------
 
   def run_c(name = 'mindfreak', flags = '-O2')
-    raise 'Tape must be bounded for C mode' unless @bounded_tape
+    raise 'Tape must be bounded for C mode' unless @tape.instance_of?(Array)
     make_bytecode(true)
     # Header
-    @code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{@bounded_tape}] = {0};\n  unsigned int *pointer = tape;"
+    @code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{@tape.size}] = {0};\n  unsigned int *pointer = tape;"
     indent = '  '
     # Match bytecode
     @bytecode.each {|c,arg,offset,set|
