@@ -52,12 +52,8 @@ class MindFreak
     # Program cleaned
     @program = program
     @program.gsub!(/[^+-><.,\[\]]/,'')
-    # Bounded
-    if bounded_tape.is_a?(Fixnum) and bounded_tape > 0
-      @tape = Array.new(bounded_tape, 0)
-    # Infinity tape
-    else @tape = Hash.new(0)
-    end
+    # Bounded or infinity tape
+    @tape = bounded_tape > 0 ? Array.new(bounded_tape, 0) : Hash.new(0)
   end
 
   #-----------------------------------------------
@@ -342,12 +338,12 @@ if $0 == __FILE__
   begin
     # Help
     if ARGV.first == '-h'
-      puts "#$0 [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=500|<int>|nil]"
+      puts "#$0 [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=500|<int>]"
     else
       # Input
       filename = ARGV[0] || 'mandelbrot.bf'
       mode = ARGV[1] || 'interpreter'
-      bounds = ARGV[2] ? ARGV[2] == 'nil' ? nil : ARGV[2].to_i : 500
+      bounds = ARGV[2] ? ARGV[2].to_i : 500
       # Setup
       mind = MindFreak.new(IO.read(filename), bounds)
       # Check Syntax
