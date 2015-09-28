@@ -99,6 +99,6 @@ The main of this project is just an example of the API, you can run all modes in
 - Debug System, verbose, step-by-step, breakpoint
 - Interactive mode
 - Optional input tape to deal with inputs (faster testing)
-- Find more problems
+- Find more examples
 - Make it API friendly
 - Tests
