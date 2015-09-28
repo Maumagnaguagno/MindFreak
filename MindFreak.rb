@@ -178,20 +178,20 @@ class MindFreak
       i = 0
       while i < @bytecode.size
         # Set cell [-]+
-        if @bytecode[i].first == JUMP and @bytecode[i+1] == [INCREMENT,-1] and @bytecode[i+2].first == JUMPBACK
+        if @bytecode[i].first == JUMP and @bytecode[i.succ] == [INCREMENT,-1] and @bytecode[i+2].first == JUMPBACK
           # Clear
           @bytecode[i] = [INCREMENT,0,nil,true]
           # Set
           if @bytecode[i+3].first == INCREMENT
             @bytecode[i][1] += @bytecode[i+3][1]
-            @bytecode.slice!(i+1,3)
+            @bytecode.slice!(i.succ,3)
           else
-            @bytecode.slice!(i+1,2)
+            @bytecode.slice!(i.succ,2)
           end
           stable = false
 =begin
         # Loop multiplication
-        elsif @bytecode[i].first == JUMP and @bytecode[i+1] == [INCREMENT,-1]
+        elsif @bytecode[i].first == JUMP and @bytecode[i.succ] == [INCREMENT,-1]
           j = i + 2
           j += 1 while @bytecode[j].first == INCREMENT
           if @bytecode[j].first == JUMPBACK
@@ -204,13 +204,13 @@ class MindFreak
           stable = false
 =end
         # Pointer movement >+< <.>
-        elsif @bytecode[i].first == BACKWARD and (@bytecode[i+1].first == INCREMENT or @bytecode[i+1].first == WRITE) and @bytecode[i+2].first == BACKWARD
+        elsif @bytecode[i].first == BACKWARD and (@bytecode[i.succ].first == INCREMENT or @bytecode[i.succ].first == WRITE) and @bytecode[i+2].first == BACKWARD
           # Jump value
           @bytecode[i+2][1] += @bytecode[i][1]
           @bytecode.slice!(i+2) if @bytecode[i+2][1].zero?
           # Add pointer
-          @bytecode[i] = [@bytecode[i+1][0], @bytecode[i+1][1], @bytecode[i][1], @bytecode[i+1][3]]
-          @bytecode.slice!(i+1)
+          @bytecode[i] = [@bytecode[i.succ][0], @bytecode[i.succ][1], @bytecode[i][1], @bytecode[i.succ][3]]
+          @bytecode.slice!(i.succ)
           stable = false
         end
         i += 1
@@ -256,7 +256,7 @@ class MindFreak
   # Run Ruby
   #-----------------------------------------------
 
-  def run_ruby
+  def run_ruby(filename, keep = false)
     make_bytecode(true)
     # Tape definition
     @rubycode = @tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : "tape = Hash.new(0)"
@@ -284,7 +284,7 @@ class MindFreak
       else raise 'Unknown bytecode'
       end
     }
-    File.open("#{filename}.rb",'w') {|file| file << @rubycode}
+    File.open("#{filename}.rb",'w') {|file| file << @rubycode} if keep
     eval(@rubycode)
   end
 
@@ -292,7 +292,7 @@ class MindFreak
   # Run C
   #-----------------------------------------------
 
-  def run_c(name = 'mindfreak', flags = '-O2')
+  def run_c(filename, flags = '-O2', keep = false)
     raise 'Tape must be bounded for C mode' unless @tape.instance_of?(Array)
     make_bytecode(true)
     # Header
@@ -321,13 +321,14 @@ class MindFreak
       end
     }
     @code << "\n  return 0;\n}"
-    File.open("#{name}.c",'w') {|file| file << @code}
-    system("gcc #{name}.c -o #{name}.exe #{flags}")
+    file_c = "#{filename}.c"
+    file_exe = "#{filename}.exe"
+    File.open(file_c,'w') {|file| file << @code}
+    system("gcc #{file_c} -o #{file_exe} #{flags}")
     t = Time.now.to_f
-    system("#{name}.exe")
+    system(file_exe)
     puts "\nTime: #{Time.now.to_f - t}s"
-    File.delete("#{name}.c")
-    File.delete("#{name}.exe")
+    File.delete(file_c, file_exe) unless keep
   end
 end
 
@@ -338,7 +339,7 @@ if $0 == __FILE__
   begin
     # Help
     if ARGV.first == '-h'
-      puts "#$0 [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=500|<int>]"
+      puts "MindFreak [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=500|<int>]"
     else
       # Input
       filename = ARGV[0] || 'mandelbrot.bf'
@@ -363,11 +364,11 @@ if $0 == __FILE__
         when 'rb'
           puts 'Ruby Mode',''
           t = Time.now.to_f
-          mind.run_ruby
+          mind.run_ruby(filename)
           puts "\nTime: #{Time.now.to_f - t}s", '-' * 100
         when 'c'
           puts 'C Mode',''
-          mind.run_c
+          mind.run_c(filename)
         else raise 'Mode not found'
         end
       # Ops
