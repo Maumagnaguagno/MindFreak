@@ -22,6 +22,9 @@
 # - Optimizations
 # Feb 2015
 # - C mode
+# Sep 2015
+# - File keep optional
+# - Improved 1.8.7 compatibility
 #-----------------------------------------------
 # TODO
 # - Debug System, verbose, step-by-step, breakpoint
@@ -42,7 +45,7 @@ class MindFreak
 
   MULTIPLY  = ?*.ord
 
-  attr_reader :program, :bytecode, :rubycode, :tape, :pointer
+  attr_reader :program, :bytecode, :tape, :pointer
 
   #-----------------------------------------------
   # Initialize
@@ -84,45 +87,45 @@ class MindFreak
     # Intepreter
     until @program_counter == @program.size
       case @program[@program_counter]
-      when '+' # Increment
+      when ?+ # Increment
         @tape[@pointer] += 1
-      when '-' # Decrement
+      when ?- # Decrement
         @tape[@pointer] -= 1
-      when '>' # Forward
+      when ?> # Forward
         @pointer += 1
-      when '<' # Backward
+      when ?< # Backward
         @pointer -= 1
-      when '.' # Write
+      when ?. # Write
         putc(@tape[@pointer])
-      when ',' # Read
+      when ?, # Read
         @tape[@pointer] = gets[0].ord
-      when '[' # Jump if zero
+      when ?[ # Jump if zero
         if @tape[@pointer].zero?
           @control = 1
           until @control.zero?
             @program_counter += 1
             case @program[@program_counter]
-            when '['
+            when ?[
               @control += 1
-            when ']'
+            when ?]
               @control -= 1
             end
           end
         end
-      when ']' # Return unless zero
+      when ?] # Return unless zero
         unless @tape[@pointer].zero?
           @control = -1
           until @control.zero?
             @program_counter -= 1
             case @program[@program_counter]
-            when '['
+            when ?[
               @control += 1
-            when ']'
+            when ?]
               @control -= 1
             end
           end
         end
-      else raise 'Unknown instruction'
+      else raise "Unknown instruction: #{@program[@program_counter]}"
       end
       @program_counter += 1
     end
@@ -246,7 +249,7 @@ class MindFreak
         @program_counter = arg if @tape[@pointer].zero?
       when JUMPBACK # Return unless zero
         @program_counter = arg unless @tape[@pointer].zero?
-      else raise 'Unknown bytecode'
+      else raise "Unknown bytecode: #{c}"
       end
       @program_counter += 1
     end
@@ -259,33 +262,34 @@ class MindFreak
   def run_ruby(filename, keep = false)
     make_bytecode(true)
     # Tape definition
-    @rubycode = @tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : "tape = Hash.new(0)"
-    @rubycode << "\npointer = 0"
+    rubycode = @tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : "tape = Hash.new(0)"
+    rubycode << "\npointer = 0"
     indent = ''
     # Match bytecode
     @bytecode.each {|c,arg,offset,set|
       case c
       when INCREMENT # Tape
-        @rubycode << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
+        rubycode << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
       when BACKWARD # Pointer
-        @rubycode << "\n#{indent}pointer += #{arg}"
+        rubycode << "\n#{indent}pointer += #{arg}"
       when WRITE # Write
         c = "putc(tape[pointer#{"+#{offset}" if offset}])"
-        @rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when READ # Read
         c = "tape[pointer#{"+#{offset}" if offset}] = gets[0].ord"
-        @rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when JUMP # Jump if zero
-        @rubycode << "\n#{indent}until tape[pointer].zero?"
+        rubycode << "\n#{indent}until tape[pointer].zero?"
         indent << '  '
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
-        @rubycode << "\n#{indent}end"
-      else raise 'Unknown bytecode'
+        rubycode << "\n#{indent}end"
+      else raise "Unknown bytecode: #{c}"
       end
     }
-    File.open("#{filename}.rb",'w') {|file| file << @rubycode} if keep
-    eval(@rubycode)
+    File.open("#{filename}.rb",'w') {|file| file << rubycode} if keep
+    eval(rubycode)
+    rubycode
   end
 
   #-----------------------------------------------
@@ -317,7 +321,7 @@ class MindFreak
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
         @code << "\n#{indent}}"
-      else raise 'Unknown bytecode'
+      else raise "Unknown bytecode: #{c}"
       end
     }
     @code << "\n  return 0;\n}"
@@ -342,7 +346,7 @@ if $0 == __FILE__
       puts "MindFreak [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=500|<int>]"
     else
       # Input
-      filename = ARGV[0] || 'mandelbrot.bf'
+      filename = ARGV[0] || File.expand_path('../mandelbrot.bf', __FILE__)
       mode = ARGV[1] || 'interpreter'
       bounds = ARGV[2] ? ARGV[2].to_i : 500
       # Setup
@@ -376,7 +380,7 @@ if $0 == __FILE__
       end
     end
   rescue Interrupt
-    puts "\nTape: #{mind.tape}", "Pointer: #{mind.pointer}" if mode == 'interpreter' or mode == 'bytecode'
+    puts "\nTape: #{mind.tape.inspect}", "Pointer: #{mind.pointer}" if mode == 'interpreter' or mode == 'bytecode'
   rescue
     puts $!, $@
     STDIN.gets
