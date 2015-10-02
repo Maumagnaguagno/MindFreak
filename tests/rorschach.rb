@@ -3,6 +3,7 @@ require './MindFreak'
 
 class Rorschach < Test::Unit::TestCase
 
+  SET_ONE = '[-]+'
   SUM = '[->+<] Subtract one from first cell; add to the second; repeat until first cell is zero'
 
   def test_attributes
@@ -52,8 +53,19 @@ class Rorschach < Test::Unit::TestCase
   # Run interpreter
   #-----------------------------------------------
 
+  def test_set_first_cell
+    # Clear first cell and add one
+    program = SET_ONE.dup
+    tape = [10]
+    assert_equal(nil, MindFreak.setup(program, tape))
+    assert_equal(SET_ONE, MindFreak.program)
+    MindFreak.run_interpreter
+    assert_equal([1], MindFreak.tape)
+    assert_equal(0, MindFreak.pointer)
+  end
+
   def test_sum_two_values_on_tape
-    # Test sum program with initialized tape
+    # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
     assert_equal(nil, MindFreak.setup(program, tape))
