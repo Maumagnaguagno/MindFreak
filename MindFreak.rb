@@ -29,16 +29,16 @@
 # - Module based
 # - Tape input
 # - Less instance variables
+# - Select IO
 #-----------------------------------------------
 # TODO
 # - Debug System, verbose, step-by-step/interactive mode, breakpoint
-# - Use input tape or keyboard
 #-----------------------------------------------
 
 module MindFreak
   extend self
 
-  attr_reader :program, :tape, :pointer
+  attr_reader :program, :tape, :pointer, :input, :output
   attr_accessor :debug
 
   HELP = "MindFreak [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}|<int>]"
@@ -52,15 +52,18 @@ module MindFreak
   JUMP      = ?[.ord
   JUMPBACK  = ?].ord
 
-  MULTIPLY  = ?*.ord
+  # TODO MULTIPLY  = ?*.ord
+  
 
   #-----------------------------------------------
   # Setup
   #-----------------------------------------------
 
-  def setup(program, tape, check = true)
+  def setup(program, tape, check = true, input = STDIN, output = STDOUT)
     @program = program
     @tape = tape
+    @input = input
+    @output = output
     check_program(program) if check
   end
 
@@ -98,9 +101,9 @@ module MindFreak
       when ?< # Backward
         @pointer -= 1
       when ?. # Write
-        putc(@tape[@pointer])
+        @output.putc(@tape[@pointer])
       when ?, # Read
-        @tape[@pointer] = STDIN.getc.ord
+        @tape[@pointer] = @input.getc.ord
       when ?[ # Jump if zero
         if @tape[@pointer].zero?
           control = 1
@@ -146,9 +149,9 @@ module MindFreak
       when FORWARD # Pointer
         @pointer += arg
       when WRITE # Write
-        arg.times {putc(@tape[@pointer])}
+        arg.times {@output.putc(@tape[@pointer])}
       when READ # Read
-        arg.times {@tape[@pointer] = STDIN.getc.ord}
+        arg.times {@tape[@pointer] = @input.getc.ord}
       when JUMP # Jump if zero
         program_counter = arg if @tape[@pointer].zero?
       when JUMPBACK # Return unless zero
@@ -247,8 +250,8 @@ module MindFreak
   def make_bytecode(program)
     bytecode = []
     jump_stack = []
-    # Compress
     last = index = 0
+    # Compress
     program.each_byte {|c|
       # Repeated instruction
       if c == last
@@ -278,7 +281,7 @@ module MindFreak
             jump_stack << index
           else
             # Jump program counter to index, only works for bytecode
-            bytecode << [c, jump_stack.last]
+            bytecode << [JUMPBACK, jump_stack.last]
             bytecode[jump_stack.pop] << index
           end
         end
@@ -301,7 +304,7 @@ module MindFreak
         # Set cell [-]+
         if bytecode[i].first == JUMP and bytecode[i.succ] == [INCREMENT,-1] and bytecode[i+2].first == JUMPBACK
           # Clear
-          bytecode[i] = [INCREMENT,0,nil,true]
+          bytecode[i] = [INCREMENT, 0, nil, true]
           # Set
           if bytecode[i+3].first == INCREMENT
             bytecode[i][1] += bytecode[i+3][1]
@@ -319,7 +322,7 @@ module MindFreak
             j -= 1
             puts 'MULTIPLY'
             bytecode.slice!(i,2)
-            bytecode.slice!(j)
+            bytecode.delete_at(j)
             (i+2).upto(j) {|k| bytecode[k] = [MULTIPLY,0]}
           end
           stable = false
@@ -327,11 +330,10 @@ module MindFreak
         # Pointer movement >+< <.>
         elsif bytecode[i].first == FORWARD and (bytecode[i.succ].first == INCREMENT or bytecode[i.succ].first == WRITE) and bytecode[i+2].first == FORWARD
           # Jump value
-          bytecode[i+2][1] += bytecode[i][1]
-          bytecode.slice!(i+2) if bytecode[i+2][1].zero?
+          bytecode.delete_at(i+2) if (bytecode[i+2][1] += bytecode[i][1]).zero?
           # Add pointer
           bytecode[i] = [bytecode[i.succ][0], bytecode[i.succ][1], bytecode[i][1], bytecode[i.succ][3]]
-          bytecode.slice!(i.succ)
+          bytecode.delete_at(i.succ)
           stable = false
         end
         i += 1
