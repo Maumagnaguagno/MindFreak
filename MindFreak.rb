@@ -103,7 +103,7 @@ module MindFreak
       when ?. # Write
         @output.putc(@tape[@pointer])
       when ?, # Read
-        @tape[@pointer] = @input.getc.ord
+        @tape[@pointer] = @input.getbyte
       when ?[ # Jump if zero
         if @tape[@pointer].zero?
           control = 1
@@ -151,7 +151,7 @@ module MindFreak
       when WRITE # Write
         arg.times {@output.putc(@tape[@pointer])}
       when READ # Read
-        arg.times {@tape[@pointer] = @input.getc.ord}
+        arg.times {@tape[@pointer] = @input.getbyte}
       when JUMP # Jump if zero
         program_counter = arg if @tape[@pointer].zero?
       when JUMPBACK # Return unless zero
@@ -182,7 +182,7 @@ module MindFreak
         c = "putc(tape[pointer#{"+#{offset}" if offset}])"
         rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when READ # Read
-        c = "tape[pointer#{"+#{offset}" if offset}] = STDIN.getc.ord"
+        c = "tape[pointer#{"+#{offset}" if offset}] = STDIN.getbyte"
         rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when JUMP # Jump if zero
         rubycode << "\n#{indent}until tape[pointer].zero?"
