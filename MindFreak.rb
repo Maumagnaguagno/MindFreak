@@ -73,11 +73,8 @@ module MindFreak
     control = 0
     program.gsub!(/[^-+><.,\[\]]/,'')
     program.each_byte {|c|
-      case c
-      when JUMP
-        control += 1
-      when JUMPBACK
-        raise 'Unexpected ] found' if (control -= 1) < 0
+      if c == JUMP then control += 1
+      elsif c == JUMPBACK and (control -= 1) < 0 then raise 'Unexpected ] found'
       end
     }
     raise 'Expected [' unless control.zero?
