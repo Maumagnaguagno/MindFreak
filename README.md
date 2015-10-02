@@ -23,22 +23,28 @@ You only have access to this set of instructions:
 ### Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
 The lack of common operators makes even simple things, like setting a variable to a zero, a loop:  
-- ```[-]```
-  - ```while(tape[pointer] != 0) tape[pointer] -= 1```
-    - ```tape[pointer] = 0```  
+```
+Original:  [-]
+Converted: while(tape[pointer] != 0) tape[pointer] -= 1;
+Optimized: tape[pointer] = 0;
+```
 
 Setting a variable requires the cell to be cleared and updated:
-- ```[-]++```
-  - ```while(tape[pointer] != 0) tape[pointer] -= 1; tape[pointer] += 2```
-    - ```tape[pointer] = 2```
+```
+Original:  [-]++
+Converted: while(tape[pointer] != 0) tape[pointer] -= 1; tape[pointer] += 2;
+Optimized: tape[pointer] = 2;
+```
 
 Pointer movement can be a pain, checking a cell nearby and returning to its initial state costs cycles. We want those cycles back:
-- ```>+<```
-  - ```pointer += 1; tape[pointer] += 1; pointer -= 1```
-    - ```tape[pointer+1] += 1```
+```
+Original:  >+<
+Converted: pointer += 1; tape[pointer] += 1; pointer -= 1;
+Optimized: tape[pointer+1] += 1;
+```
 
-But there is much more to be optimized, sometimes variations and two optimizations at the same time are hard to apply.
-The solution was to run multiple times the optimizer.
+But there is [much more to be optimized](http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html), sometimes variations and two optimizations at the same time are hard to apply.
+My solution was to run multiple times the optimizer.
 I am currently working on the while N case for a cell that is decremented by 1 by each iteration:
 ```c
 while(tape[pointer] != 0)
@@ -63,7 +69,6 @@ Which is awesome and sad at the same time, maybe I will never have time to imple
 Since I can output C code we can expect GCC to solve this problem for us.
 
 ### Compatibility
-
 Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex to support.
 In bold the limits supported by this project:
 - Size of cell (bit, byte, **word**, other fixed size, **unbounded**)
@@ -73,7 +78,6 @@ In bold the limits supported by this project:
 - Unknown instructions (**ignore**, halt, extended instructions)
 
 ### Support
-
 - Unbounded cell value
 - Bounded (fast Array) ou unbounded tape (slow Hash)
 - Interpret **+ - > < . , [ ]** as commands, the rest as comments
@@ -84,7 +88,6 @@ In bold the limits supported by this project:
 - The C mode works like the Ruby one, but cells are limited to **unsigned int**
 
 ### Execution
-
 ```
 ruby MindFreak.rb [filename] [interpreter|bytecode|rb|c] [bounds]
 ```
@@ -97,6 +100,4 @@ The main of this project is just an example of the API, you can run all modes in
 
 ### ToDo's
 - step-by-step/interactive mode, breakpoint
-- Optional input tape to deal with inputs (faster testing without keyboard/user delay)
 - Add examples
-- More tests
