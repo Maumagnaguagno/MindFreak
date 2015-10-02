@@ -53,7 +53,7 @@ class Rorschach < Test::Unit::TestCase
   # Run interpreter
   #-----------------------------------------------
 
-  def test_set_first_cell
+  def test_interpreter_set_one
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
@@ -64,7 +64,7 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(0, MindFreak.pointer)
   end
 
-  def test_sum_two_values_on_tape
+  def test_interpreter_sum
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
@@ -73,5 +73,73 @@ class Rorschach < Test::Unit::TestCase
     MindFreak.run_interpreter
     assert_equal([0, 15], MindFreak.tape)
     assert_equal(0, MindFreak.pointer)
+  end
+
+  #-----------------------------------------------
+  # Bytecode
+  #-----------------------------------------------
+
+  def test_bytecode_set
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.make_bytecode(SET_ONE)
+    assert_equal(
+      [
+        [MindFreak::JUMP,       2],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::JUMPBACK,   0],
+        [MindFreak::INCREMENT,  1]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, set]
+    assert_equal(
+      [
+        [MindFreak::INCREMENT, 1, nil, true]
+      ],
+      MindFreak.optimize_bytecode(bytecode)
+    )
+  end
+
+  def test_bytecode_sum
+    # Bytecode uses [instruction, argument]
+    program = SUM.dup
+    MindFreak.check_program(program)
+    bytecode = MindFreak.make_bytecode(program)
+    assert_equal(
+      [
+        [MindFreak::JUMP,       5],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::FORWARD,    1],
+        [MindFreak::INCREMENT,  1],
+        [MindFreak::FORWARD,   -1],
+        [MindFreak::JUMPBACK,   0]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, set]
+    assert_equal(
+      [
+        [MindFreak::JUMP,       5],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::INCREMENT,  1, 1, nil],
+        [MindFreak::JUMPBACK,   0]
+      ],
+      MindFreak.optimize_bytecode(bytecode)
+    )
+  end
+
+  def test_nullification
+    # Add and subtract
+    bytecode = MindFreak.make_bytecode('+++---')
+    assert_equal([], bytecode)
+    # Subtract and add
+    bytecode = MindFreak.make_bytecode('---+++')
+    assert_equal([], bytecode)
+    # Add one
+    bytecode = MindFreak.make_bytecode('---++++')
+    assert_equal([[MindFreak::INCREMENT, 1]], bytecode)
+    # Check if pairs are matched
+    bytecode = MindFreak.make_bytecode('+>>-<>+<<-')
+    assert_equal([], bytecode)
   end
 end

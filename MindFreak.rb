@@ -61,11 +61,18 @@ module MindFreak
   def setup(program, tape, check = true)
     @program = program
     @tape = tape
-    return unless check
+    check_program(program) if check
+  end
+
+  #-----------------------------------------------
+  # Check program
+  #-----------------------------------------------
+
+  def check_program(program)
     # Remove comments and check balanced brackets
     control = 0
-    @program.gsub!(/[^-+><.,\[\]]/,'')
-    @program.each_byte {|c|
+    program.gsub!(/[^-+><.,\[\]]/,'')
+    program.each_byte {|c|
       case c
       when JUMP
         control += 1
@@ -126,26 +133,146 @@ module MindFreak
   end
 
   #-----------------------------------------------
+  # Run bytecode
+  #-----------------------------------------------
+
+  def run_bytecode
+    # Bytecode interpreter does not support optimizations
+    bytecode = make_bytecode(@program)
+    program_counter = @pointer = 0
+    # Execute
+    until program_counter == bytecode.size
+      c, arg = bytecode[program_counter]
+      case c
+      when INCREMENT # Tape
+        @tape[@pointer] += arg
+      when FORWARD # Pointer
+        @pointer += arg
+      when WRITE # Write
+        arg.times {putc(@tape[@pointer])}
+      when READ # Read
+        arg.times {@tape[@pointer] = STDIN.getc.ord}
+      when JUMP # Jump if zero
+        program_counter = arg if @tape[@pointer].zero?
+      when JUMPBACK # Return unless zero
+        program_counter = arg unless @tape[@pointer].zero?
+      else raise "Unknown bytecode: #{c} at position #{program_counter}"
+      end
+      program_counter += 1
+    end
+  end
+
+  #-----------------------------------------------
+  # Run Ruby
+  #-----------------------------------------------
+
+  def run_ruby(filename, keep = false)
+    # Tape definition
+    rubycode = @tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : 'tape = Hash.new(0)'
+    rubycode << "\npointer = 0"
+    indent = ''
+    # Match bytecode
+    optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set|
+      case c
+      when INCREMENT # Tape
+        rubycode << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
+      when FORWARD # Pointer
+        rubycode << "\n#{indent}pointer += #{arg}"
+      when WRITE # Write
+        c = "putc(tape[pointer#{"+#{offset}" if offset}])"
+        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+      when READ # Read
+        c = "tape[pointer#{"+#{offset}" if offset}] = STDIN.getc.ord"
+        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+      when JUMP # Jump if zero
+        rubycode << "\n#{indent}until tape[pointer].zero?"
+        indent << '  '
+      when JUMPBACK # Return unless zero
+        indent.slice!(0,2)
+        rubycode << "\n#{indent}end"
+      else raise "Unknown bytecode: #{c}"
+      end
+    }
+    File.open("#{filename}.rb",'w') {|file| file << rubycode} if keep
+    eval(rubycode)
+    rubycode
+  end
+
+  #-----------------------------------------------
+  # Run C
+  #-----------------------------------------------
+
+  def run_c(filename, flags = '-O2', keep = false)
+    if @tape.instance_of?(Array)
+      tape_size = @tape.size
+    else
+      tape_size = TAPE_DEFAULT_SIZE
+      puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
+    end
+    # Header
+    code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0};\n  unsigned int *pointer = tape;"
+    indent = '  '
+    # Match bytecode
+    optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set|
+      case c
+      when INCREMENT # Tape
+        code << "\n#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless set}= #{arg};"
+      when FORWARD # Pointer
+        code << "\n#{indent}pointer += #{arg};"
+      when WRITE # Write
+        c = "putchar(*(pointer#{"+#{offset}" if offset}));"
+        code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
+      when READ # Read
+        c = "(*(pointer#{"+#{offset}" if offset})) = getchar();"
+        code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
+      when JUMP # Jump if zero
+        code << "\n#{indent}while(*pointer){"
+        indent << '  '
+      when JUMPBACK # Return unless zero
+        indent.slice!(0,2)
+        code << "\n#{indent}}"
+      else raise "Unknown bytecode: #{c}"
+      end
+    }
+    code << "\n  return 0;\n}"
+    file_c = "#{filename}.c"
+    file_exe = "#{filename}.exe"
+    File.open(file_c,'w') {|file| file << code}
+    system("gcc #{file_c} -o #{file_exe} #{flags}")
+    system(file_exe)
+    File.delete(file_c, file_exe) unless keep
+  end
+
+  #-----------------------------------------------
   # Make bytecode
   #-----------------------------------------------
 
-  def make_bytecode
+  def make_bytecode(program)
     bytecode = []
     jump_stack = []
     # Compress
-    last = pc = index = 0
-    @program.each_byte {|c|
+    last = index = 0
+    program.each_byte {|c|
+      # Repeated instruction
       if c == last
-        if c == DECREMENT or c == BACKWARD
-          bytecode.last[1] -= 1
-        else
-          bytecode.last[1] += 1
+        if (bytecode.last[1] += 1).zero?
+          bytecode.pop
+          last = bytecode.empty? ? 0 : bytecode.last.first
+        end
+      # Disguised repeated instruction
+      elsif (c == DECREMENT and last == INCREMENT) or (c == BACKWARD and last == FORWARD)
+        if (bytecode.last[1] += -1).zero?
+          bytecode.pop
+          last = bytecode.empty? ? 0 : bytecode.last.first
         end
       else
-        # Not Jump
+        # New simple instruction
         if c < JUMP
-          last = c
-          bytecode << [c == DECREMENT ? INCREMENT : c == FORWARD ? BACKWARD : c, (c == DECREMENT || c == BACKWARD) ? -1 : 1]
+          bytecode << case c
+          when DECREMENT then [last = INCREMENT, -1]
+          when BACKWARD then [last = FORWARD, -1]
+          else [last = c, 1]
+          end
         # Jump
         else
           last = 0
@@ -201,7 +328,7 @@ module MindFreak
           stable = false
 =end
         # Pointer movement >+< <.>
-        elsif bytecode[i].first == BACKWARD and (bytecode[i.succ].first == INCREMENT or bytecode[i.succ].first == WRITE) and bytecode[i+2].first == BACKWARD
+        elsif bytecode[i].first == FORWARD and (bytecode[i.succ].first == INCREMENT or bytecode[i.succ].first == WRITE) and bytecode[i+2].first == FORWARD
           # Jump value
           bytecode[i+2][1] += bytecode[i][1]
           bytecode.slice!(i+2) if bytecode[i+2][1].zero?
@@ -216,117 +343,6 @@ module MindFreak
       return bytecode if stable or level.zero?
       puts "Bytecode optimized to size: #{bytecode.size}" if @debug
     }
-  end
-
-  #-----------------------------------------------
-  # Run bytecode
-  #-----------------------------------------------
-
-  def run_bytecode
-    # Bytecode interpreter does not support optimizations
-    bytecode = make_bytecode
-    program_counter = @pointer = 0
-    # Execute
-    until program_counter == bytecode.size
-      c, arg = bytecode[program_counter]
-      case c
-      when INCREMENT # Tape
-        @tape[@pointer] += arg
-      when BACKWARD # Pointer
-        @pointer += arg
-      when WRITE # Write
-        arg.times {putc(@tape[@pointer])}
-      when READ # Read
-        arg.times {@tape[@pointer] = STDIN.getc.ord}
-      when JUMP # Jump if zero
-        program_counter = arg if @tape[@pointer].zero?
-      when JUMPBACK # Return unless zero
-        program_counter = arg unless @tape[@pointer].zero?
-      else raise "Unknown bytecode: #{c}"
-      end
-      program_counter += 1
-    end
-  end
-
-  #-----------------------------------------------
-  # Run Ruby
-  #-----------------------------------------------
-
-  def run_ruby(filename, keep = false)
-    # Tape definition
-    rubycode = @tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : "tape = Hash.new(0)"
-    rubycode << "\npointer = 0"
-    indent = ''
-    # Match bytecode
-    optimize_bytecode(make_bytecode).each {|c,arg,offset,set|
-      case c
-      when INCREMENT # Tape
-        rubycode << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
-      when BACKWARD # Pointer
-        rubycode << "\n#{indent}pointer += #{arg}"
-      when WRITE # Write
-        c = "putc(tape[pointer#{"+#{offset}" if offset}])"
-        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
-      when READ # Read
-        c = "tape[pointer#{"+#{offset}" if offset}] = STDIN.getc.ord"
-        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
-      when JUMP # Jump if zero
-        rubycode << "\n#{indent}until tape[pointer].zero?"
-        indent << '  '
-      when JUMPBACK # Return unless zero
-        indent.slice!(0,2)
-        rubycode << "\n#{indent}end"
-      else raise "Unknown bytecode: #{c}"
-      end
-    }
-    File.open("#{filename}.rb",'w') {|file| file << rubycode} if keep
-    eval(rubycode)
-    rubycode
-  end
-
-  #-----------------------------------------------
-  # Run C
-  #-----------------------------------------------
-
-  def run_c(filename, flags = '-O2', keep = false)
-    if @tape.instance_of?(Array)
-      tape_size = @tape.size
-    else
-      tape_size = TAPE_DEFAULT_SIZE
-      puts "C mode requires a bounded tape, using #{tape_size} cells" if debug
-    end
-    # Header
-    code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0};\n  unsigned int *pointer = tape;"
-    indent = '  '
-    # Match bytecode
-    optimize_bytecode(make_bytecode).each {|c,arg,offset,set|
-      case c
-      when INCREMENT # Tape
-        code << "\n#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless set}= #{arg};"
-      when BACKWARD # Pointer
-        code << "\n#{indent}pointer += #{arg};"
-      when WRITE # Write
-        c = "putchar(*(pointer#{"+#{offset}" if offset}));"
-        code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
-      when READ # Read
-        c = "(*(pointer#{"+#{offset}" if offset})) = getchar();"
-        code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
-      when JUMP # Jump if zero
-        code << "\n#{indent}while(*pointer){"
-        indent << '  '
-      when JUMPBACK # Return unless zero
-        indent.slice!(0,2)
-        code << "\n#{indent}}"
-      else raise "Unknown bytecode: #{c}"
-      end
-    }
-    code << "\n  return 0;\n}"
-    file_c = "#{filename}.c"
-    file_exe = "#{filename}.exe"
-    File.open(file_c,'w') {|file| file << code}
-    system("gcc #{file_c} -o #{file_exe} #{flags}")
-    system(file_exe)
-    File.delete(file_c, file_exe) unless keep
   end
 end
 
