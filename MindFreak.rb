@@ -31,8 +31,7 @@
 # - Less instance variables
 #-----------------------------------------------
 # TODO
-# - Debug System, verbose, step-by-step, breakpoint
-# - Interactive mode
+# - Debug System, verbose, step-by-step/interactive mode, breakpoint
 # - Use input tape or keyboard
 #-----------------------------------------------
 
@@ -62,10 +61,10 @@ module MindFreak
   def setup(program, tape, check = true)
     @program = program
     @tape = tape
-    return true unless check
+    return unless check
     # Remove comments and check balanced brackets
     control = 0
-    @program.gsub!(/[^+-><.,\[\]]/,'')
+    @program.gsub!(/[^-+><.,\[\]]/,'')
     @program.each_byte {|c|
       case c
       when JUMP
@@ -97,7 +96,7 @@ module MindFreak
       when ?. # Write
         putc(@tape[@pointer])
       when ?, # Read
-        @tape[@pointer] = gets[0].ord
+        @tape[@pointer] = STDIN.getc.ord
       when ?[ # Jump if zero
         if @tape[@pointer].zero?
           control = 1
@@ -238,7 +237,7 @@ module MindFreak
       when WRITE # Write
         arg.times {putc(@tape[@pointer])}
       when READ # Read
-        arg.times {@tape[@pointer] = gets[0].ord}
+        arg.times {@tape[@pointer] = STDIN.getc.ord}
       when JUMP # Jump if zero
         program_counter = arg if @tape[@pointer].zero?
       when JUMPBACK # Return unless zero
@@ -269,7 +268,7 @@ module MindFreak
         c = "putc(tape[pointer#{"+#{offset}" if offset}])"
         rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when READ # Read
-        c = "tape[pointer#{"+#{offset}" if offset}] = gets[0].ord"
+        c = "tape[pointer#{"+#{offset}" if offset}] = STDIN.getc.ord"
         rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when JUMP # Jump if zero
         rubycode << "\n#{indent}until tape[pointer].zero?"
