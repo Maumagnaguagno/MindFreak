@@ -99,4 +99,4 @@ The main of this project is just an example of the API, you can run all modes in
 - step-by-step/interactive mode, breakpoint
 - Optional input tape to deal with inputs (faster testing without keyboard/user delay)
 - Add examples
-- Tests
+- More tests
