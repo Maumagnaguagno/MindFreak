@@ -1,4 +1,5 @@
 require 'test/unit'
+require 'stringio'
 require './MindFreak'
 
 class Rorschach < Test::Unit::TestCase
@@ -75,6 +76,20 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(0, MindFreak.pointer)
   end
 
+  def test_interpreter_io
+    # Using StringIO to simulate output
+    program = ',.,.,..,.>.'
+    tape = [0, 33]
+    input = StringIO.new('Helo','r')
+    output = StringIO.new
+    assert_equal(nil, MindFreak.setup(program, tape, true, input, output))
+    MindFreak.run_interpreter
+    assert_equal([111, 33], MindFreak.tape)
+    assert_equal(1, MindFreak.pointer)
+    assert_equal('Helo', input.string)
+    assert_equal('Hello!', output.string)
+  end
+
   #-----------------------------------------------
   # Bytecode
   #-----------------------------------------------
@@ -128,7 +143,7 @@ class Rorschach < Test::Unit::TestCase
     )
   end
 
-  def test_nullification
+  def test_bytecode_nullification
     # Add and subtract
     bytecode = MindFreak.make_bytecode('+++---')
     assert_equal([], bytecode)
@@ -141,5 +156,28 @@ class Rorschach < Test::Unit::TestCase
     # Check if pairs are matched
     bytecode = MindFreak.make_bytecode('+>>-<>+<<-')
     assert_equal([], bytecode)
+  end
+
+  def test_bytecode_offset
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.make_bytecode('>+<<.>')
+    assert_equal(
+      [
+        [MindFreak::FORWARD,   1],
+        [MindFreak::INCREMENT, 1],
+        [MindFreak::FORWARD,  -2],
+        [MindFreak::WRITE,     1],
+        [MindFreak::FORWARD,   1]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, set]
+    assert_equal(
+      [
+        [MindFreak::INCREMENT, 1,  1, nil],
+        [MindFreak::WRITE,     1, -1, nil],
+      ],
+      MindFreak.optimize_bytecode(bytecode)
+    )
   end
 end
