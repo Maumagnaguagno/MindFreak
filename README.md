@@ -90,15 +90,13 @@ ruby MindFreak.rb [filename] [interpreter|bytecode|rb|c] [bounds]
 ```
 
 The current implementation expects the brainfuck filename, execution mode and tape bounds.
-The C mode is the fastest, but requires GCC in your path.
+The C mode is the fastest, it requires GCC in your path so you can compile and have an executable.
 The tape is bounded by default to 500 cells, make it 0 to support any size.
-An unbounded tape is slower and Ruby and C modes requires a bounded tape, as no Hash is currently supported.
-The main of this project is just an example of the API, you can run all modes in sequence without the need to create a new MindFreak object.
+An unbounded tape is slower and C mode will use the default size to allocate the tape.
+The main of this project is just an example of the API, you can run all modes in sequence if you like.
 
 ### ToDo's
-- Debug System, verbose, step-by-step, breakpoint
-- Interactive mode
-- Optional input tape to deal with inputs (faster testing)
-- Find more examples
-- Make it API friendly
+- step-by-step/interactive mode, breakpoint
+- Optional input tape to deal with inputs (faster testing without keyboard/user delay)
+- Add examples
 - Tests
