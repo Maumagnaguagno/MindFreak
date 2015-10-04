@@ -44,7 +44,7 @@ Optimized: tape[pointer+1] += 1;
 ```
 
 But there is [much more to be optimized](http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html), sometimes variations and two optimizations at the same time are hard to apply.
-My solution was to run multiple times the optimizer.
+The solution is to apply optimizations following a certain order.
 I am currently working on the while N case for a cell that is decremented by 1 by each iteration:
 ```c
 while(tape[pointer] != 0)

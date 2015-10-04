@@ -30,6 +30,7 @@
 # - Tape input
 # - Less instance variables
 # - Select IO
+# - Multiplication
 #-----------------------------------------------
 # TODO
 # - Debug System, verbose, step-by-step/interactive mode, breakpoint
@@ -52,8 +53,7 @@ module MindFreak
   JUMP      = ?[.ord
   JUMPBACK  = ?].ord
 
-  # TODO MULTIPLY  = ?*.ord
-  
+  MULTIPLY  = ?*.ord
 
   #-----------------------------------------------
   # Setup
@@ -166,36 +166,38 @@ module MindFreak
   # Run Ruby
   #-----------------------------------------------
 
-  def run_ruby(filename, keep = false)
+  def run_ruby(filename = 'out', keep = false)
     # Tape definition
-    rubycode = @tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : 'tape = Hash.new(0)'
-    rubycode << "\npointer = 0"
+    code = (@tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : 'tape = Hash.new(0)')
+    code << "\npointer = 0"
     indent = ''
     # Match bytecode
     optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set|
       case c
       when INCREMENT # Tape
-        rubycode << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
+        code << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
       when FORWARD # Pointer
-        rubycode << "\n#{indent}pointer += #{arg}"
+        code << "\n#{indent}pointer += #{arg}"
       when WRITE # Write
         c = "putc(tape[pointer#{"+#{offset}" if offset}])"
-        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+        code << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when READ # Read
         c = "tape[pointer#{"+#{offset}" if offset}] = STDIN.getbyte"
-        rubycode << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+        code << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
       when JUMP # Jump if zero
-        rubycode << "\n#{indent}until tape[pointer].zero?"
+        code << "\n#{indent}until tape[pointer].zero?"
         indent << '  '
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
-        rubycode << "\n#{indent}end"
+        code << "\n#{indent}end"
+      when MULTIPLY # Multiplication
+        code << "\n#{indent}tape[pointer+#{arg}] += tape[pointer] * #{offset}"
       else raise "Unknown bytecode: #{c}"
       end
     }
-    File.open("#{filename}.rb",'w') {|file| file << rubycode} if keep
-    eval(rubycode)
-    rubycode
+    File.open("#{filename}.rb",'w') {|file| file << code} if keep
+    eval(code)
+    code
   end
 
   #-----------------------------------------------
@@ -231,6 +233,8 @@ module MindFreak
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
         code << "\n#{indent}}"
+      when MULTIPLY # Multiplication
+        code << "\n#{indent}*(pointer+#{arg}) += *(pointer) * #{offset};"
       else raise "Unknown bytecode: #{c}"
       end
     }
@@ -296,52 +300,84 @@ module MindFreak
   # Optimize bytecode
   #-----------------------------------------------
 
-  def optimize_bytecode(bytecode, level = 3)
-    loop {
-      stable = true
-      i = 0
-      while i < bytecode.size
-        # Set cell [-]+
-        if bytecode[i].first == JUMP and bytecode[i.succ] == [INCREMENT,-1] and bytecode[i+2].first == JUMPBACK
-          # Clear
-          bytecode[i] = [INCREMENT, 0, nil, true]
-          # Set
-          if bytecode[i+3].first == INCREMENT
-            bytecode[i][1] += bytecode[i+3][1]
-            bytecode.slice!(i.succ,3)
-          else
-            bytecode.slice!(i.succ,2)
+  def optimize_bytecode(bytecode)
+    # Clear and set [-] [+] [-]+ [+]-
+    i = 0
+    while i < bytecode.size
+      if bytecode[i].first == JUMP and bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
+        # Clear
+        bytecode[i] = [INCREMENT, 0, nil, true]
+        # Set
+        if bytecode[i+3].first == INCREMENT
+          bytecode[i][1] = bytecode[i+3][1]
+          bytecode.slice!(i.succ,3)
+        else bytecode.slice!(i.succ,2)
+        end
+      end
+      i += 1
+    end
+    # Multiplication [->+<]
+    i = 0
+    while i < bytecode.size
+      if bytecode[i].first == JUMP
+        j = i.succ
+        while j < bytecode.size
+          if bytecode[j].first == JUMP
+            i = j
+          elsif bytecode[j].first == JUMPBACK
+            memory = Hash.new(0)
+            pointer = 0
+            bytecode[(i.succ)..(j.pred)].each {|inst|
+              case inst.first
+              when INCREMENT
+                if inst[3]
+                  pointer = nil
+                  break
+                end
+                memory[pointer] = memory[pointer] + inst[1]
+              when FORWARD
+                pointer += inst[1]
+              else
+                pointer = nil
+                break
+              end
+            }
+            if pointer and pointer.zero? and memory[0] == -1
+              memory.delete(0)
+              block = []
+              memory.each {|key,value| block << [MULTIPLY, key, value]}
+              block << [INCREMENT, 0, nil, true]
+              bytecode[i..j] = block
+              stable = false
+            else
+              i = j
+            end
           end
-          stable = false
-=begin
-        # Loop multiplication
-        elsif bytecode[i].first == JUMP and bytecode[i.succ] == [INCREMENT,-1]
-          j = i + 2
-          j += 1 while bytecode[j].first == INCREMENT
-          if bytecode[j].first == JUMPBACK
-            j -= 1
-            puts 'MULTIPLY'
-            bytecode.slice!(i,2)
-            bytecode.delete_at(j)
-            (i+2).upto(j) {|k| bytecode[k] = [MULTIPLY,0]}
-          end
-          stable = false
-=end
-        # Pointer movement >+< <.>
-        elsif bytecode[i].first == FORWARD and (bytecode[i.succ].first == INCREMENT or bytecode[i.succ].first == WRITE) and bytecode[i+2].first == FORWARD
-          # Jump value
+          j += 1
+        end
+      end
+      i += 1
+    end
+    # Offset >+< <.>
+    i = 0
+    while i < bytecode.size
+      if bytecode[i].first == FORWARD and (bytecode[i.succ].first == INCREMENT or bytecode[i.succ].first == WRITE or bytecode[i.succ].first == READ)
+        # Push offset to next forward
+        if bytecode[i+2].first == FORWARD
           bytecode.delete_at(i+2) if (bytecode[i+2][1] += bytecode[i][1]).zero?
-          # Add pointer
           bytecode[i] = [bytecode[i.succ][0], bytecode[i.succ][1], bytecode[i][1], bytecode[i.succ][3]]
           bytecode.delete_at(i.succ)
-          stable = false
+        # Swap forward with instruction
+        else
+          offset = bytecode[i]
+          bytecode[i] = [bytecode[i.succ][0], bytecode[i.succ][1], bytecode[i][1], bytecode[i.succ][3]]
+          bytecode[i.succ] = offset
         end
-        i += 1
       end
-      level -= 1
-      return bytecode if stable or level.zero?
-      puts "Bytecode optimized to size: #{bytecode.size}" if @debug
-    }
+      i += 1
+    end
+    puts "Bytecode optimized to size: #{bytecode.size}" if @debug
+    bytecode
   end
 end
 
@@ -351,7 +387,7 @@ end
 if $0 == __FILE__
   begin
     # Help
-    if ARGV.first == '-h'
+    if ARGV.empty? or ARGV.first == '-h'
       puts MindFreak::HELP
     else
       # Input
@@ -377,12 +413,12 @@ if $0 == __FILE__
       when 'rb'
         puts 'Ruby Mode'
         t = Time.now.to_f
-        MindFreak.run_ruby(filename)
+        MindFreak.run_ruby(filename, true)
         puts "\nTime: #{Time.now.to_f - t}s"
       when 'c'
         puts 'C Mode'
         t = Time.now.to_f
-        MindFreak.run_c(filename)
+        MindFreak.run_c(filename, true)
         puts "\nTime: #{Time.now.to_f - t}s"
       else raise 'Mode not found'
       end
