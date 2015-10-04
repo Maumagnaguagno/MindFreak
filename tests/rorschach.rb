@@ -106,7 +106,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set]
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1, nil, true]
@@ -131,16 +131,10 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set]
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
     assert_equal(
-      #[
-      #  [MindFreak::JUMP,       5],
-      #  [MindFreak::INCREMENT, -1],
-      #  [MindFreak::INCREMENT,  1, 1, nil],
-      #  [MindFreak::JUMPBACK,   0]
-      #],
       [
-        [MindFreak::MULTIPLY, 1, 1],
+        [MindFreak::MULTIPLY,  1, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
       MindFreak.optimize_bytecode(bytecode)
@@ -176,7 +170,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set]
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1,  1, nil],
@@ -202,11 +196,11 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set]
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
     assert_equal(
       [
-        [MindFreak::MULTIPLY,  2, 1],
-        [MindFreak::MULTIPLY,  3, 1],
+        [MindFreak::MULTIPLY,  2, nil, 1],
+        [MindFreak::MULTIPLY,  3, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
       MindFreak.optimize_bytecode(bytecode)
@@ -229,12 +223,40 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set]
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
     assert_equal(
       [
-        [MindFreak::MULTIPLY,  2, 5],
-        [MindFreak::MULTIPLY,  3, 2],
+        [MindFreak::MULTIPLY,  2, nil, 5],
+        [MindFreak::MULTIPLY,  3, nil, 2],
         [MindFreak::INCREMENT, 0, nil, true]
+      ],
+      MindFreak.optimize_bytecode(bytecode)
+    )
+  end
+
+  def test_bytecode_multiply_with_offset
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.make_bytecode('>>[->>+++++>++<<<]')
+    assert_equal(
+      [
+        [MindFreak::FORWARD,    2],
+        [MindFreak::JUMP,       8],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::FORWARD,    2],
+        [MindFreak::INCREMENT,  5],
+        [MindFreak::FORWARD,    1],
+        [MindFreak::INCREMENT,  2],
+        [MindFreak::FORWARD,   -3],
+        [MindFreak::JUMPBACK,   1]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    assert_equal(
+      [
+        [MindFreak::MULTIPLY,  2, 2, 5],
+        [MindFreak::MULTIPLY,  3, 2, 2],
+        [MindFreak::INCREMENT, 0, 2, true]
       ],
       MindFreak.optimize_bytecode(bytecode)
     )

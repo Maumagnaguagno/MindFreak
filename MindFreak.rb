@@ -172,10 +172,10 @@ module MindFreak
     code << "\npointer = 0"
     indent = ''
     # Match bytecode
-    optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set|
+    optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set_multiplier|
       case c
       when INCREMENT # Tape
-        code << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set}= #{arg}"
+        code << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set_multiplier}= #{arg}"
       when FORWARD # Pointer
         code << "\n#{indent}pointer += #{arg}"
       when WRITE # Write
@@ -191,7 +191,7 @@ module MindFreak
         indent.slice!(0,2)
         code << "\n#{indent}end"
       when MULTIPLY # Multiplication
-        code << "\n#{indent}tape[pointer+#{arg}] += tape[pointer] * #{offset}"
+        code << "\n#{indent}tape[pointer+#{offset ? arg + offset : arg}] += tape[pointer#{"+#{offset}" if offset}]#{" * #{set_multiplier}" unless set_multiplier.zero?}"
       else raise "Unknown bytecode: #{c}"
       end
     }
@@ -204,7 +204,7 @@ module MindFreak
   # Run C
   #-----------------------------------------------
 
-  def run_c(filename, flags = '-O2', keep = false)
+  def run_c(filename, keep = false, flags = '-O2')
     if @tape.instance_of?(Array)
       tape_size = @tape.size
     else
@@ -215,10 +215,10 @@ module MindFreak
     code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0};\n  unsigned int *pointer = tape;"
     indent = '  '
     # Match bytecode
-    optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set|
+    optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set_multiplier|
       case c
       when INCREMENT # Tape
-        code << "\n#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless set}= #{arg};"
+        code << "\n#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless set_multiplier}= #{arg};"
       when FORWARD # Pointer
         code << "\n#{indent}pointer += #{arg};"
       when WRITE # Write
@@ -234,7 +234,7 @@ module MindFreak
         indent.slice!(0,2)
         code << "\n#{indent}}"
       when MULTIPLY # Multiplication
-        code << "\n#{indent}*(pointer+#{arg}) += *(pointer) * #{offset};"
+        code << "\n#{indent}*(pointer+#{offset ? arg + offset : arg}) += *(pointer#{"+#{offset}" if offset})#{" * #{set_multiplier}" unless set_multiplier.zero?};"
       else raise "Unknown bytecode: #{c}"
       end
     }
@@ -242,7 +242,9 @@ module MindFreak
     file_c = "#{filename}.c"
     file_exe = "#{filename}.exe"
     File.open(file_c,'w') {|file| file << code}
+    puts 'Compiling' if @debug
     system("gcc #{file_c} -o #{file_exe} #{flags}")
+    puts 'Done' if @debug
     system(file_exe)
     File.delete(file_c, file_exe) unless keep
   end
@@ -327,16 +329,16 @@ module MindFreak
           elsif bytecode[j].first == JUMPBACK
             memory = Hash.new(0)
             pointer = 0
-            bytecode[(i.succ)..(j.pred)].each {|inst|
-              case inst.first
+            i.succ.upto(j.pred) {|k|
+              case bytecode[k].first
               when INCREMENT
-                if inst[3]
+                if bytecode[k][3]
                   pointer = nil
                   break
                 end
-                memory[pointer] = memory[pointer] + inst[1]
+                memory[pointer] = memory[pointer] + bytecode[k][1]
               when FORWARD
-                pointer += inst[1]
+                pointer += bytecode[k][1]
               else
                 pointer = nil
                 break
@@ -344,13 +346,9 @@ module MindFreak
             }
             if pointer and pointer.zero? and memory[0] == -1
               memory.delete(0)
-              block = []
-              memory.each {|key,value| block << [MULTIPLY, key, value]}
-              block << [INCREMENT, 0, nil, true]
-              bytecode[i..j] = block
+              bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, value]} << [INCREMENT, 0, nil, true]
               stable = false
-            else
-              i = j
+            else break
             end
           end
           j += 1
@@ -360,22 +358,25 @@ module MindFreak
     end
     # Offset >+< <.>
     i = 0
-    while i < bytecode.size
-      if bytecode[i].first == FORWARD and (bytecode[i.succ].first == INCREMENT or bytecode[i.succ].first == WRITE or bytecode[i.succ].first == READ)
+    while i < bytecode.size.pred
+      next_inst = bytecode[i.succ]
+      if bytecode[i].first == FORWARD and (next_inst.first == INCREMENT or next_inst.first == WRITE or next_inst.first == READ or next_inst.first == MULTIPLY)
         # Push offset to next forward
-        if bytecode[i+2].first == FORWARD
+        if bytecode[i+2] and bytecode[i+2].first == FORWARD
           bytecode.delete_at(i+2) if (bytecode[i+2][1] += bytecode[i][1]).zero?
-          bytecode[i] = [bytecode[i.succ][0], bytecode[i.succ][1], bytecode[i][1], bytecode[i.succ][3]]
+          bytecode[i] = [next_inst.first, next_inst[1], bytecode[i][1], next_inst[3]]
           bytecode.delete_at(i.succ)
         # Swap forward with instruction
         else
           offset = bytecode[i]
-          bytecode[i] = [bytecode[i.succ][0], bytecode[i.succ][1], bytecode[i][1], bytecode[i.succ][3]]
+          bytecode[i] = [next_inst.first, next_inst[1], bytecode[i][1], next_inst[3]]
           bytecode[i.succ] = offset
         end
       end
       i += 1
     end
+    # Remove last forwards
+    bytecode.pop while bytecode.last.first == FORWARD
     puts "Bytecode optimized to size: #{bytecode.size}" if @debug
     bytecode
   end

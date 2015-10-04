@@ -45,24 +45,7 @@ Optimized: tape[pointer+1] += 1;
 
 But there is [much more to be optimized](http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html), sometimes variations and two optimizations at the same time are hard to apply.
 The solution is to apply optimizations following a certain order.
-I am currently working on the while N case for a cell that is decremented by 1 by each iteration:
-```c
-while(tape[pointer] != 0)
-{
-  tape[pointer] -= 1;
-  ...
-}
-```
-The optimized version would be:
-```c
-counter = tape[pointer]
-while(counter != 0)
-{
-  counter -= 1
-  ...
-}
-tape[pointer] = 0
-```
+This project contracts several operations at the first level of bytecode generation and them apply the hard optimizations, generating a more complex bytecode.
 
 [Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) has even more optimizations!
 Which is awesome and sad at the same time, maybe I will never have time to implement them all.
