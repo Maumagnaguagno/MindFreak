@@ -54,20 +54,19 @@ Since I can output C code we can expect GCC to solve this problem for us.
 ### Compatibility
 Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex to support.
 In bold what is supported by this project:
-- Size of cell (bit, byte, **word**, other fixed size, **unbounded**)
+- Size of cell (bit, **byte/unsigned char**, **word/unsigned int**, **other C fixed size**, **unbounded**)
 - Size of tape (**pre-allocated**, **allocated as required**)
 - How the input happens (**IO object**, **read from terminal**)
 - How the output happens (**IO object**, **write to terminal**)
 - Unknown instructions (**ignore**, halt, extended instructions)
 
 ### Support
-- Unbounded cell value
 - Bounded (fast Array) ou unbounded tape (slow Hash)
 - Ignore comments and check brackets before execution
-- Interpreter mode, apply instructions as user provided.
+- Interpreter mode, apply instructions as user provided
 - Bytecode mode (cluster repeated instructions to achieve speed-up)
 - Ruby Mode (transform bytecode to ruby and eval to get even more speed)
-- The C mode works like the Ruby one, but cells are limited to **unsigned int** and bounded tape.
+- The C mode works like the Ruby one, but cells are limited to fixed size and bounded tape
 - Output tape when interrupted (for interpreted and bytecode modes, not for Ruby or C)
 
 ### Execution

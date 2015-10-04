@@ -204,7 +204,7 @@ module MindFreak
   # Run C
   #-----------------------------------------------
 
-  def run_c(filename, keep = false, flags = '-O2')
+  def run_c(filename, keep = false, type = 'unsigned int', flags = '-O2')
     if @tape.instance_of?(Array)
       tape_size = @tape.size
     else
@@ -212,7 +212,7 @@ module MindFreak
       puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
     end
     # Header
-    code = "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0};\n  unsigned int *pointer = tape;"
+    code = "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0};\n  #{type} *pointer = tape;"
     indent = '  '
     # Match bytecode
     optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set_multiplier|
@@ -336,7 +336,7 @@ module MindFreak
                   pointer = nil
                   break
                 end
-                memory[pointer] = memory[pointer] + bytecode[k][1]
+                memory[pointer] += bytecode[k][1]
               when FORWARD
                 pointer += bytecode[k][1]
               else
@@ -347,7 +347,6 @@ module MindFreak
             if pointer and pointer.zero? and memory[0] == -1
               memory.delete(0)
               bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, value]} << [INCREMENT, 0, nil, true]
-              stable = false
             else break
             end
           end
