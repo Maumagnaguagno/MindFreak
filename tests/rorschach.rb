@@ -261,4 +261,13 @@ class Rorschach < Test::Unit::TestCase
       MindFreak.optimize_bytecode(bytecode)
     )
   end
+
+  def test_bytecode_mandelbrot
+    # Check bytecode size
+    program = IO.read('mandelbrot.bf')
+    MindFreak.check_program(program)
+    bytecode = MindFreak.make_bytecode(program)
+    assert_equal(4115, bytecode.size)
+    assert_equal(2248, MindFreak.optimize_bytecode(bytecode).size)
+  end
 end
