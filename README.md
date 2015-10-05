@@ -81,5 +81,6 @@ An unbounded tape is slower and C mode will use the default size to allocate the
 The main of this project is just an example of the API, you can run all modes in sequence if you like.
 
 ### ToDo's
+- Generate Ruby and C code with non-blank tape
 - Step-by-step/interactive mode, breakpoint
 - Add examples

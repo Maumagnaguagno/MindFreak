@@ -270,4 +270,74 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(4115, bytecode.size)
     assert_equal(2248, MindFreak.optimize_bytecode(bytecode).size)
   end
+
+  #-----------------------------------------------
+  # to Ruby
+  #-----------------------------------------------
+
+  def test_to_ruby_set
+    # Hash tape
+    assert_equal(nil, MindFreak.setup(SET_ONE.dup, []))
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\ntape[pointer] = 1",
+      MindFreak.to_ruby
+    )
+    # Array tape
+    assert_equal(nil, MindFreak.setup(SET_ONE.dup, [0]))
+    assert_equal(
+      "tape = Array.new(1,0)\npointer = 0\ntape[pointer] = 1",
+      MindFreak.to_ruby
+    )
+  end
+
+  def test_to_ruby_sum
+    # Hash tape
+    assert_equal(nil, MindFreak.setup(SUM.dup, []))
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
+      MindFreak.to_ruby
+    )
+    # Array tape
+    assert_equal(nil, MindFreak.setup(SUM.dup, [0]))
+    assert_equal(
+      "tape = Array.new(1,0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
+      MindFreak.to_ruby
+    )
+  end
+
+  #-----------------------------------------------
+  # to C
+  #-----------------------------------------------
+
+  def test_to_c_set
+    # Default size tape
+    assert_equal(nil, MindFreak.setup(SET_ONE.dup, []))
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
+      MindFreak.to_c
+    )
+    # User size tape
+    tape = [0,0]
+    assert_equal(nil, MindFreak.setup(SET_ONE.dup, tape))
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
+      MindFreak.to_c
+    )
+  end
+
+  def test_to_c_sum
+    # Default size tape
+    assert_equal(nil, MindFreak.setup(SUM.dup, []))
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      MindFreak.to_c
+    )
+    # User size tape
+    tape = [0,0]
+    assert_equal(nil, MindFreak.setup(SUM.dup, tape))
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      MindFreak.to_c
+    )
+  end
 end
