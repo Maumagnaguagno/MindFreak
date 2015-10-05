@@ -169,8 +169,7 @@ module MindFreak
 
   def to_ruby
     # Tape definition
-    code = (@tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : 'tape = Hash.new(0)')
-    code << "\npointer = 0"
+    code = (@tape.empty? ? 'tape = Hash.new(0)' : "tape = Array.new(#{@tape.size},0)") << "\npointer = 0"
     indent = ''
     # Match bytecode
     optimize_bytecode(make_bytecode(@program)).each {|c,arg,offset,set_multiplier|
@@ -192,7 +191,7 @@ module MindFreak
         indent.slice!(0,2)
         code << "\n#{indent}end"
       when MULTIPLY # Multiplication
-        code << "\n#{indent}tape[pointer+#{offset ? arg + offset : arg}] += tape[pointer#{"+#{offset}" if offset}]#{" * #{set_multiplier}" unless set_multiplier.zero?}"
+        code << "\n#{indent}tape[pointer+#{offset ? arg + offset : arg}] += tape[pointer#{"+#{offset}" if offset}]#{" * #{set_multiplier}" if set_multiplier != 1}"
       else raise "Unknown bytecode: #{c}"
       end
     }
@@ -204,9 +203,7 @@ module MindFreak
   #-----------------------------------------------
 
   def to_c(type = 'unsigned int')
-    if @tape.instance_of?(Array)
-      tape_size = @tape.size
-    else
+    if (tape_size = @tape.size).zero?
       tape_size = TAPE_DEFAULT_SIZE
       puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
     end
@@ -233,7 +230,7 @@ module MindFreak
         indent.slice!(0,2)
         code << "\n#{indent}}"
       when MULTIPLY # Multiplication
-        code << "\n#{indent}*(pointer+#{offset ? arg + offset : arg}) += *(pointer#{"+#{offset}" if offset})#{" * #{set_multiplier}" unless set_multiplier.zero?};"
+        code << "\n#{indent}*(pointer+#{offset ? arg + offset : arg}) += *(pointer#{"+#{offset}" if offset})#{" * #{set_multiplier}" if set_multiplier != 1};"
       else raise "Unknown bytecode: #{c}"
       end
     }
@@ -411,12 +408,14 @@ if $0 == __FILE__
         File.open("#{filename}.rb",'w') {|file| file << code} if keep
       when 'c'
         puts 'C Mode', 'Compiling'
+        # Compile
         file_c = "#{filename}.c"
         file_exe = "#{filename}.exe"
         t = Time.now.to_f
         File.open(file_c,'w') {|file| file << MindFreak.to_c}
         system("gcc #{file_c} -o #{file_exe} -O2")
         puts "Compilation time: #{Time.now.to_f - t}s"
+        # Execute
         t = Time.now.to_f
         system(file_exe)
         puts "\nTime: #{Time.now.to_f - t}s"
