@@ -31,6 +31,7 @@
 # - Less instance variables
 # - Select IO
 # - Multiplication
+# - Ruby and C methods generate code instead of execution
 #-----------------------------------------------
 # TODO
 # - Debug System, verbose, step-by-step/interactive mode, breakpoint
@@ -42,7 +43,7 @@ module MindFreak
   attr_reader :program, :tape, :pointer, :input, :output
   attr_accessor :debug
 
-  HELP = "MindFreak [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}|<int>]"
+  HELP = "MindFreak [filename=mandelbrot.bf] [mode=interpreter|bytecode|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}]"
 
   INCREMENT = ?+.ord
   DECREMENT = ?-.ord
@@ -163,10 +164,10 @@ module MindFreak
   end
 
   #-----------------------------------------------
-  # Run Ruby
+  # to Ruby
   #-----------------------------------------------
 
-  def run_ruby(filename = 'out', keep = false)
+  def to_ruby
     # Tape definition
     code = (@tape.instance_of?(Array) ? "tape = Array.new(#{@tape.size},0)" : 'tape = Hash.new(0)')
     code << "\npointer = 0"
@@ -195,16 +196,14 @@ module MindFreak
       else raise "Unknown bytecode: #{c}"
       end
     }
-    File.open("#{filename}.rb",'w') {|file| file << code} if keep
-    eval(code)
     code
   end
 
   #-----------------------------------------------
-  # Run C
+  # to C
   #-----------------------------------------------
 
-  def run_c(filename, keep = false, type = 'unsigned int', flags = '-O2')
+  def to_c(type = 'unsigned int')
     if @tape.instance_of?(Array)
       tape_size = @tape.size
     else
@@ -239,14 +238,6 @@ module MindFreak
       end
     }
     code << "\n  return 0;\n}"
-    file_c = "#{filename}.c"
-    file_exe = "#{filename}.exe"
-    File.open(file_c,'w') {|file| file << code}
-    puts 'Compiling' if @debug
-    system("gcc #{file_c} -o #{file_exe} #{flags}")
-    puts 'Done' if @debug
-    system(file_exe)
-    File.delete(file_c, file_exe) unless keep
   end
 
   #-----------------------------------------------
@@ -267,7 +258,7 @@ module MindFreak
         end
       # Disguised repeated instruction
       elsif (c == DECREMENT and last == INCREMENT) or (c == BACKWARD and last == FORWARD)
-        if (bytecode.last[1] += -1).zero?
+        if (bytecode.last[1] -= 1).zero?
           bytecode.pop
           last = bytecode.empty? ? 0 : bytecode.last.first
         end
@@ -398,6 +389,8 @@ if $0 == __FILE__
       # Setup with clean tape
       MindFreak.debug = true
       MindFreak.setup(IO.read(filename), bounds > 0 ? Array.new(bounds, 0) : Hash.new(0))
+      # Keep source and executables
+      keep = true
       # Execute
       case mode
       when 'interpreter'
@@ -413,13 +406,21 @@ if $0 == __FILE__
       when 'rb'
         puts 'Ruby Mode'
         t = Time.now.to_f
-        MindFreak.run_ruby(filename, true)
+        eval(code = MindFreak.to_ruby)
         puts "\nTime: #{Time.now.to_f - t}s"
+        File.open("#{filename}.rb",'w') {|file| file << code} if keep
       when 'c'
-        puts 'C Mode'
+        puts 'C Mode', 'Compiling'
+        file_c = "#{filename}.c"
+        file_exe = "#{filename}.exe"
         t = Time.now.to_f
-        MindFreak.run_c(filename, true)
+        File.open(file_c,'w') {|file| file << MindFreak.to_c}
+        system("gcc #{file_c} -o #{file_exe} -O2")
+        puts "Compilation time: #{Time.now.to_f - t}s"
+        t = Time.now.to_f
+        system(file_exe)
         puts "\nTime: #{Time.now.to_f - t}s"
+        File.delete(file_c, file_exe) unless keep
       else raise 'Mode not found'
       end
     end
