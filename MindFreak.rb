@@ -90,8 +90,9 @@ module MindFreak
 
   def run_interpreter
     program_counter = control = @pointer = 0
+    program_size = @program.size
     # Intepreter
-    until program_counter == @program.size
+    until program_counter == program_size
       case @program[program_counter]
       when ?+ # Increment
         @tape[@pointer] += 1
@@ -141,8 +142,9 @@ module MindFreak
     # Bytecode interpreter does not support optimizations
     bytecode = make_bytecode(@program)
     program_counter = @pointer = 0
+    program_size = bytecode.size
     # Execute
-    until program_counter == bytecode.size
+    until program_counter == program_size
       c, arg = bytecode[program_counter]
       case c
       when INCREMENT # Tape
@@ -150,13 +152,53 @@ module MindFreak
       when FORWARD # Pointer
         @pointer += arg
       when WRITE # Write
-        arg.times {@output.putc(@tape[@pointer])}
+        arg > 1 ? @output.print(@tape[@pointer].chr * arg) : @output.putc(@tape[@pointer])
       when READ # Read
-        arg.times {@tape[@pointer] = @input.getbyte}
+        arg.pred.times {@input.getbyte}
+        @tape[@pointer] = @input.getbyte
       when JUMP # Jump if zero
         program_counter = arg if @tape[@pointer].zero?
       when JUMPBACK # Return unless zero
         program_counter = arg unless @tape[@pointer].zero?
+      else raise "Unknown bytecode: #{c} at position #{program_counter}"
+      end
+      program_counter += 1
+    end
+  end
+
+  #-----------------------------------------------
+  # Run bytecode2
+  #-----------------------------------------------
+
+  def run_bytecode2
+    # Bytecode2 interpreter support optimizations
+    bytecode = optimize_bytecode(make_bytecode(@program))
+    program_counter = @pointer = 0
+    program_size = bytecode.size
+    # Execute
+    until program_counter == program_size
+      c, arg, offset, set_multiplier = bytecode[program_counter]
+      case c
+      when INCREMENT # Tape
+        if set_multiplier
+          @tape[offset ? @pointer + offset : @pointer] = arg
+        else
+          @tape[offset ? @pointer + offset : @pointer] += arg
+        end
+      when FORWARD # Pointer
+        @pointer += arg
+      when WRITE # Write
+        c = @tape[offset ? @pointer + offset : @pointer]
+        arg > 1 ? @output.print(c.chr * arg) : @output.putc(c)
+      when READ # Read
+        arg.pred.times {@input.getbyte}
+        @tape[offset ? @pointer + offset : @pointer] = @input.getbyte
+      when JUMP # Jump if zero
+        program_counter = arg if @tape[@pointer].zero?
+      when JUMPBACK # Return unless zero
+        program_counter = arg unless @tape[@pointer].zero?
+      when MULTIPLY # Multiplication
+        @tape[@pointer + (offset ? arg + offset : arg)] += @tape[offset ? @pointer + offset : @pointer] * set_multiplier
       else raise "Unknown bytecode: #{c} at position #{program_counter}"
       end
       program_counter += 1
@@ -179,8 +221,8 @@ module MindFreak
       when FORWARD # Pointer
         code << "\n#{indent}pointer += #{arg}"
       when WRITE # Write
-        c = "putc(tape[pointer#{"+#{offset}" if offset}])"
-        code << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+        c = "tape[pointer#{"+#{offset}" if offset}]"
+        code << "\n#{indent}#{arg > 1 ? "print #{c}.chr * arg" : "putc #{c}"}"
       when READ # Read
         c = "tape[pointer#{"+#{offset}" if offset}] = STDIN.getbyte"
         code << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
@@ -367,6 +409,19 @@ module MindFreak
     end
     # Remove last forwards
     bytecode.pop while bytecode.last.first == FORWARD
+    # Rebuild jump arguments
+    jump_stack = []
+    i = 0
+    while i < bytecode.size
+      if bytecode[i].first == JUMP
+        jump_stack << i
+      elsif bytecode[i].first == JUMPBACK
+        # Jump program counter to index, only works for bytecode
+        bytecode[i][1] = jump_stack.last
+        bytecode[jump_stack.pop][1] = i
+      end
+      i += 1
+    end
     puts "Bytecode optimized to size: #{bytecode.size}" if @debug
     bytecode
   end
@@ -403,6 +458,11 @@ if $0 == __FILE__
         t = Time.now.to_f
         MindFreak.run_bytecode
         puts "\nTime: #{Time.now.to_f - t}s",'Tape:', MindFreak.tape.inspect
+      when 'bytecode2'
+        puts 'Bytecode2 Mode'
+        t = Time.now.to_f
+        MindFreak.run_bytecode2
+        puts "\nTime: #{Time.now.to_f - t}s",'Tape:', MindFreak.tape.inspect
       when 'rb'
         puts 'Ruby Mode'
         t = Time.now.to_f
@@ -427,7 +487,7 @@ if $0 == __FILE__
       end
     end
   rescue Interrupt
-    puts "\nTape: #{MindFreak.tape.inspect}", "Pointer: #{MindFreak.pointer}" if mode == 'interpreter' or mode == 'bytecode'
+    puts "\nTape: #{MindFreak.tape.inspect}", "Pointer: #{MindFreak.pointer}" if mode != 'rb' and mode != 'c'
   rescue
     puts $!, $@
     STDIN.gets
