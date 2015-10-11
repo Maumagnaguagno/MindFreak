@@ -54,7 +54,7 @@ class Rorschach < Test::Unit::TestCase
   # Run interpreter
   #-----------------------------------------------
 
-  def test_interpreter_set_one
+  def test_run_interpreter_set_one
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
@@ -65,7 +65,7 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(0, MindFreak.pointer)
   end
 
-  def test_interpreter_sum
+  def test_run_interpreter_sum
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
@@ -76,7 +76,7 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(0, MindFreak.pointer)
   end
 
-  def test_interpreter_io
+  def test_run_interpreter_io
     # Using StringIO to simulate output
     program = ',.,.,..,.>.'
     tape = [0, 33]
@@ -91,10 +91,90 @@ class Rorschach < Test::Unit::TestCase
   end
 
   #-----------------------------------------------
+  # Run bytecode
+  #-----------------------------------------------
+
+  def test_run_bytecode_set_one
+    # Clear first cell and add one
+    program = SET_ONE.dup
+    tape = [10]
+    assert_equal(nil, MindFreak.setup(program, tape))
+    assert_equal(SET_ONE, MindFreak.program)
+    MindFreak.run_bytecode
+    assert_equal([1], MindFreak.tape)
+    assert_equal(0, MindFreak.pointer)
+  end
+
+  def test_run_bytecode_sum
+    # Sum elements of tape
+    program = SUM.dup
+    tape = [5, 10]
+    assert_equal(nil, MindFreak.setup(program, tape))
+    assert_equal('[->+<]', MindFreak.program)
+    MindFreak.run_bytecode
+    assert_equal([0, 15], MindFreak.tape)
+    assert_equal(0, MindFreak.pointer)
+  end
+
+  def test_run_bytecode_io
+    # Using StringIO to simulate output
+    program = ',.,.,..,.>.'
+    tape = [0, 33]
+    input = StringIO.new('Helo','r')
+    output = StringIO.new
+    assert_equal(nil, MindFreak.setup(program, tape, true, input, output))
+    MindFreak.run_bytecode
+    assert_equal([111, 33], MindFreak.tape)
+    assert_equal(1, MindFreak.pointer)
+    assert_equal('Helo', input.string)
+    assert_equal('Hello!', output.string)
+  end
+
+  #-----------------------------------------------
+  # Run bytecode2
+  #-----------------------------------------------
+
+  def test_run_bytecode2_set_one
+    # Clear first cell and add one
+    program = SET_ONE.dup
+    tape = [10]
+    assert_equal(nil, MindFreak.setup(program, tape))
+    assert_equal(SET_ONE, MindFreak.program)
+    MindFreak.run_bytecode2
+    assert_equal([1], MindFreak.tape)
+    assert_equal(0, MindFreak.pointer)
+  end
+
+  def test_run_bytecode2_sum
+    # Sum elements of tape
+    program = SUM.dup
+    tape = [5, 10]
+    assert_equal(nil, MindFreak.setup(program, tape))
+    assert_equal('[->+<]', MindFreak.program)
+    MindFreak.run_bytecode2
+    assert_equal([0, 15], MindFreak.tape)
+    assert_equal(0, MindFreak.pointer)
+  end
+
+  def test_run_bytecode2_io
+    # Using StringIO to simulate output
+    program = ',.,.,..,.>.'
+    tape = [0, 33]
+    input = StringIO.new('Helo','r')
+    output = StringIO.new
+    assert_equal(nil, MindFreak.setup(program, tape, true, input, output))
+    MindFreak.run_bytecode2
+    assert_equal([111, 33], MindFreak.tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('Helo', input.string)
+    assert_equal('Hello!', output.string)
+  end
+
+  #-----------------------------------------------
   # Bytecode
   #-----------------------------------------------
 
-  def test_bytecode_set
+  def test_bytecode_set_one
     # Bytecode uses [instruction, argument]
     bytecode = MindFreak.make_bytecode(SET_ONE)
     assert_equal(
@@ -275,7 +355,7 @@ class Rorschach < Test::Unit::TestCase
   # to Ruby
   #-----------------------------------------------
 
-  def test_to_ruby_set
+  def test_to_ruby_set_one
     # Hash tape
     assert_equal(nil, MindFreak.setup(SET_ONE.dup, []))
     assert_equal(
@@ -309,7 +389,7 @@ class Rorschach < Test::Unit::TestCase
   # to C
   #-----------------------------------------------
 
-  def test_to_c_set
+  def test_to_c_set_one
     # Default size tape
     assert_equal(nil, MindFreak.setup(SET_ONE.dup, []))
     assert_equal(
