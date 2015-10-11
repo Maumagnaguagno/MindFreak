@@ -291,51 +291,57 @@ module MindFreak
   #-----------------------------------------------
 
   def optimize_bytecode(bytecode)
-    # Clear and set [-] [+] [-]+ [+]-
+    # Clear [-] [+] or set [-]+ [+]-
+    clear = [INCREMENT, 0, nil, true]
     i = 0
     while i < bytecode.size
       if bytecode[i].first == JUMP and bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
-        # Clear
-        bytecode[i] = [INCREMENT, 0, nil, true]
         # Set
         if bytecode[i+3].first == INCREMENT
-          bytecode[i][1] = bytecode[i+3][1]
+          bytecode[i] = [INCREMENT, bytecode[i+3][1], nil, true]
           bytecode.slice!(i.succ,3)
-        else bytecode.slice!(i.succ,2)
+        # Clear
+        else
+          bytecode[i] = clear
+          bytecode.slice!(i.succ,2)
         end
       end
       i += 1
     end
     # Multiplication [->+<]
+    memory = Hash.new(0)
     i = 0
     while i < bytecode.size
+      # Start of loop
       if bytecode[i].first == JUMP
         j = i.succ
         while j < bytecode.size
+          # Inner loop has been found
           if bytecode[j].first == JUMP
             i = j
+          # End of loop
           elsif bytecode[j].first == JUMPBACK
-            memory = Hash.new(0)
+            # Extract data
             pointer = 0
             i.succ.upto(j.pred) {|k|
-              case bytecode[k].first
-              when INCREMENT
-                if bytecode[k][3]
-                  pointer = nil
-                  break
-                end
-                memory[pointer] += bytecode[k][1]
-              when FORWARD
-                pointer += bytecode[k][1]
+              k = bytecode[k]
+              if k.first == FORWARD
+                pointer += k[1]
+              elsif k.first == INCREMENT and not k[3]
+                memory[pointer] += k[1]
               else
                 pointer = nil
                 break
               end
             }
-            if pointer and pointer.zero? and memory[0] == -1
-              memory.delete(0)
-              bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, value]} << [INCREMENT, 0, nil, true]
-            else break
+            # Apply if pointer ends at same point and memory[0] is a counter
+            if pointer == 0 and memory.delete(0) == -1
+              bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, value]} << clear
+              i += memory.size.succ
+              memory.clear
+            else
+              memory.clear
+              break
             end
           end
           j += 1
@@ -346,18 +352,15 @@ module MindFreak
     # Offset >+< <.>
     i = 0
     while i < bytecode.size.pred
-      next_inst = bytecode[i.succ]
-      if bytecode[i].first == FORWARD and (next_inst.first == INCREMENT or next_inst.first == WRITE or next_inst.first == READ or next_inst.first == MULTIPLY)
-        # Push offset to next forward
+      if (offset = bytecode[i]).first == FORWARD and (next_inst = bytecode[i.succ]).first < JUMP
+        # Original instruction uses offset
+        bytecode[i] = [next_inst.first, next_inst[1], offset[1], next_inst[3]]
+        # Push offset to next forward if they do not nullify
         if bytecode[i+2] and bytecode[i+2].first == FORWARD
-          bytecode.delete_at(i+2) if (bytecode[i+2][1] += bytecode[i][1]).zero?
-          bytecode[i] = [next_inst.first, next_inst[1], bytecode[i][1], next_inst[3]]
+          bytecode.delete_at(i+2) if (bytecode[i+2][1] += offset[1]).zero?
           bytecode.delete_at(i.succ)
-        # Swap forward with instruction
-        else
-          offset = bytecode[i]
-          bytecode[i] = [next_inst.first, next_inst[1], bytecode[i][1], next_inst[3]]
-          bytecode[i.succ] = offset
+        # Swap forward with original instruction
+        else bytecode[i.succ] = offset
         end
       end
       i += 1
@@ -388,7 +391,7 @@ if $0 == __FILE__
       MindFreak.setup(IO.read(filename), bounds > 0 ? Array.new(bounds, 0) : Hash.new(0))
       # Keep source and executables
       keep = true
-      # Execute
+      # Select mode
       case mode
       when 'interpreter'
         puts 'Interpreter Mode'
