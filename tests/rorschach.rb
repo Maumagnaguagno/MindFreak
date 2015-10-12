@@ -8,46 +8,35 @@ class Rorschach < Test::Unit::TestCase
   SUM = '[->+<] Subtract one from first cell; add to the second; repeat until first cell is zero'
 
   def test_attributes
-    [:program, :tape, :pointer, :debug, :debug=].each {|att| assert_respond_to(MindFreak, att)}
+    [:pointer, :input, :input=, :output, :output=, :debug, :debug=].each {|att| assert_respond_to(MindFreak, att)}
   end
 
   #-----------------------------------------------
-  # Setup
+  # Check program
   #-----------------------------------------------
 
-  def test_setup
-    # Start with no program or tape
-    assert_equal(nil, MindFreak.setup(nil, nil, false))
-    assert_equal(nil, MindFreak.program)
-    assert_equal(nil, MindFreak.tape)
-    # Setup
+  def test_check_program_empty
+    # Expected to raise an exception
     program = ''
-    tape = []
-    assert_equal(nil, MindFreak.setup(program, tape))
-    # Assert they are the same objects
-    assert_same(program, MindFreak.program)
-    assert_same(tape, MindFreak.tape)
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal('', program)
   end
 
-  def test_setup_no_check
-    # Jumping over check is possible
-    program = '[-['
-    assert_equal(nil, MindFreak.setup(program, [], false))
-    assert_equal(program, MindFreak.program)
-  end
-
-  def test_setup_check_control_open_bracket_exception
+  def test_check_program_comment_removal
     # Expected to raise an exception
-    program = '[-['
-    assert_raises(RuntimeError) {assert_equal(nil, MindFreak.setup(program, []))}
-    assert_same(program, MindFreak.program)
+    program = "abc<>[]--++#,.()123_-=;\n"
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal('<>[]--++,.-', program)
   end
 
-  def test_setup_check_control_close_bracket_exception
+  def test_check_program_open_bracket_exception
     # Expected to raise an exception
-    program = '[-]]'
-    assert_raises(RuntimeError) {assert_equal(nil, MindFreak.setup(program, []))}
-    assert_same(program, MindFreak.program)
+    assert_raises(RuntimeError) {MindFreak.check_program('[-[')}
+  end
+
+  def test_check_program_close_bracket_exception
+    # Expected to raise an exception
+    assert_raises(RuntimeError) {MindFreak.check_program('[-]]')}
   end
 
   #-----------------------------------------------
@@ -58,10 +47,10 @@ class Rorschach < Test::Unit::TestCase
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
-    assert_equal(nil, MindFreak.setup(program, tape))
-    assert_equal(SET_ONE, MindFreak.program)
-    MindFreak.run_interpreter
-    assert_equal([1], MindFreak.tape)
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal(SET_ONE, program)
+    MindFreak.run_interpreter(program, tape)
+    assert_equal([1], tape)
     assert_equal(0, MindFreak.pointer)
   end
 
@@ -69,10 +58,10 @@ class Rorschach < Test::Unit::TestCase
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
-    assert_equal(nil, MindFreak.setup(program, tape))
-    assert_equal('[->+<]', MindFreak.program)
-    MindFreak.run_interpreter
-    assert_equal([0, 15], MindFreak.tape)
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal('[->+<]', program)
+    MindFreak.run_interpreter(program, tape)
+    assert_equal([0, 15], tape)
     assert_equal(0, MindFreak.pointer)
   end
 
@@ -80,14 +69,14 @@ class Rorschach < Test::Unit::TestCase
     # Using StringIO to simulate output
     program = ',.,.,..,.>.'
     tape = [0, 33]
-    input = StringIO.new('Helo','r')
-    output = StringIO.new
-    assert_equal(nil, MindFreak.setup(program, tape, true, input, output))
-    MindFreak.run_interpreter
-    assert_equal([111, 33], MindFreak.tape)
+    MindFreak.input = StringIO.new('Helo','r')
+    MindFreak.output = StringIO.new
+    assert_equal(nil, MindFreak.check_program(program))
+    MindFreak.run_interpreter(program, tape)
+    assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
-    assert_equal('Helo', input.string)
-    assert_equal('Hello!', output.string)
+    assert_equal('Helo', MindFreak.input.string)
+    assert_equal('Hello!', MindFreak.output.string)
   end
 
   #-----------------------------------------------
@@ -98,10 +87,10 @@ class Rorschach < Test::Unit::TestCase
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
-    assert_equal(nil, MindFreak.setup(program, tape))
-    assert_equal(SET_ONE, MindFreak.program)
-    MindFreak.run_bytecode
-    assert_equal([1], MindFreak.tape)
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal(SET_ONE, program)
+    MindFreak.run_bytecode(program, tape)
+    assert_equal([1], tape)
     assert_equal(0, MindFreak.pointer)
   end
 
@@ -109,10 +98,10 @@ class Rorschach < Test::Unit::TestCase
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
-    assert_equal(nil, MindFreak.setup(program, tape))
-    assert_equal('[->+<]', MindFreak.program)
-    MindFreak.run_bytecode
-    assert_equal([0, 15], MindFreak.tape)
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal('[->+<]', program)
+    MindFreak.run_bytecode(program, tape)
+    assert_equal([0, 15], tape)
     assert_equal(0, MindFreak.pointer)
   end
 
@@ -120,14 +109,14 @@ class Rorschach < Test::Unit::TestCase
     # Using StringIO to simulate output
     program = ',.,.,..,.>.'
     tape = [0, 33]
-    input = StringIO.new('Helo','r')
-    output = StringIO.new
-    assert_equal(nil, MindFreak.setup(program, tape, true, input, output))
-    MindFreak.run_bytecode
-    assert_equal([111, 33], MindFreak.tape)
+    MindFreak.input = StringIO.new('Helo','r')
+    MindFreak.output = StringIO.new
+    assert_equal(nil, MindFreak.check_program(program))
+    MindFreak.run_bytecode(program, tape)
+    assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
-    assert_equal('Helo', input.string)
-    assert_equal('Hello!', output.string)
+    assert_equal('Helo', MindFreak.input.string)
+    assert_equal('Hello!', MindFreak.output.string)
   end
 
   #-----------------------------------------------
@@ -138,10 +127,10 @@ class Rorschach < Test::Unit::TestCase
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
-    assert_equal(nil, MindFreak.setup(program, tape))
-    assert_equal(SET_ONE, MindFreak.program)
-    MindFreak.run_bytecode2
-    assert_equal([1], MindFreak.tape)
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal(SET_ONE, program)
+    MindFreak.run_bytecode2(program, tape)
+    assert_equal([1], tape)
     assert_equal(0, MindFreak.pointer)
   end
 
@@ -149,10 +138,10 @@ class Rorschach < Test::Unit::TestCase
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
-    assert_equal(nil, MindFreak.setup(program, tape))
-    assert_equal('[->+<]', MindFreak.program)
-    MindFreak.run_bytecode2
-    assert_equal([0, 15], MindFreak.tape)
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal('[->+<]', program)
+    MindFreak.run_bytecode2(program, tape)
+    assert_equal([0, 15], tape)
     assert_equal(0, MindFreak.pointer)
   end
 
@@ -160,14 +149,131 @@ class Rorschach < Test::Unit::TestCase
     # Using StringIO to simulate output
     program = ',.,.,..,.>.'
     tape = [0, 33]
+    MindFreak.input = StringIO.new('Helo','r')
+    MindFreak.output = StringIO.new
+    assert_equal(nil, MindFreak.check_program(program))
+    MindFreak.run_bytecode2(program, tape)
+    assert_equal([111, 33], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('Helo', MindFreak.input.string)
+    assert_equal('Hello!', MindFreak.output.string)
+  end
+
+  #-----------------------------------------------
+  # Eval Ruby
+  #-----------------------------------------------
+
+  def test_eval_ruby_set_one
+    # Clear first cell and add one
+    program = SET_ONE.dup
+    tape = [10]
+    # Ruby evaluation mode requires local pointer
+    pointer = 0
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal(SET_ONE, program)
+    eval(MindFreak.to_ruby(program, tape, true))
+    assert_equal([1], tape)
+    assert_equal(0, pointer)
+  end
+
+  def test_eval_ruby_sum
+    # Sum elements of tape
+    program = SUM.dup
+    tape = [5, 10]
+    # Ruby evaluation mode requires local pointer
+    pointer = 0
+    assert_equal(nil, MindFreak.check_program(program))
+    assert_equal('[->+<]', program)
+    eval(MindFreak.to_ruby(program, tape, true))
+    assert_equal([0, 15], tape)
+    assert_equal(0, pointer)
+  end
+
+  def test_eval_ruby_io
+    # Using StringIO to simulate output
     input = StringIO.new('Helo','r')
     output = StringIO.new
-    assert_equal(nil, MindFreak.setup(program, tape, true, input, output))
-    MindFreak.run_bytecode2
-    assert_equal([111, 33], MindFreak.tape)
-    assert_equal(0, MindFreak.pointer)
+    program = ',.,.,..,.>.'
+    tape = [0, 33]
+    # Ruby evaluation mode requires local pointer
+    pointer = 0
+    assert_equal(nil, MindFreak.check_program(program))
+    # Connect input and output local variables
+    eval(MindFreak.to_ruby(program, tape, true, 'input', 'output'))
+    assert_equal([111, 33], tape)
+    assert_equal(0, pointer)
     assert_equal('Helo', input.string)
     assert_equal('Hello!', output.string)
+  end
+
+  #-----------------------------------------------
+  # to Ruby
+  #-----------------------------------------------
+
+  def test_to_ruby_set_one
+    program = SET_ONE.dup
+    assert_equal(nil, MindFreak.check_program(program))
+    # Hash tape
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\ntape[pointer] = 1",
+      MindFreak.to_ruby(program, [])
+    )
+    # Array tape
+    assert_equal(
+      "tape = Array.new(1,0)\npointer = 0\ntape[pointer] = 1",
+      MindFreak.to_ruby(program, [0])
+    )
+  end
+
+  def test_to_ruby_sum
+    program = SUM.dup
+    assert_equal(nil, MindFreak.check_program(program))
+    # Hash tape
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
+      MindFreak.to_ruby(program, [])
+    )
+    # Array tape
+    assert_equal(
+      "tape = Array.new(1,0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
+      MindFreak.to_ruby(program, [0])
+    )
+  end
+
+  #-----------------------------------------------
+  # to C
+  #-----------------------------------------------
+
+  def test_to_c_set_one
+    program = SET_ONE.dup
+    assert_equal(nil, MindFreak.check_program(program))
+    # Default size tape
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
+      MindFreak.to_c(program, [])
+    )
+    # User size tape
+    tape = [0,0]
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
+      MindFreak.to_c(program, tape)
+    )
+  end
+
+  def test_to_c_sum
+    program = SUM.dup
+    assert_equal(nil, MindFreak.check_program(program))
+    # Default size tape
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      MindFreak.to_c(program, [])
+    )
+    # User size tape
+    tape = [0,0]
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      MindFreak.to_c(program, tape)
+    )
   end
 
   #-----------------------------------------------
@@ -345,79 +451,9 @@ class Rorschach < Test::Unit::TestCase
   def test_bytecode_mandelbrot
     # Check bytecode size
     program = IO.read('mandelbrot.bf')
-    MindFreak.check_program(program)
+    assert_equal(nil, MindFreak.check_program(program))
     bytecode = MindFreak.make_bytecode(program)
     assert_equal(4115, bytecode.size)
     assert_equal(2248, MindFreak.optimize_bytecode(bytecode).size)
-  end
-
-  #-----------------------------------------------
-  # to Ruby
-  #-----------------------------------------------
-
-  def test_to_ruby_set_one
-    # Hash tape
-    assert_equal(nil, MindFreak.setup(SET_ONE.dup, []))
-    assert_equal(
-      "tape = Hash.new(0)\npointer = 0\ntape[pointer] = 1",
-      MindFreak.to_ruby
-    )
-    # Array tape
-    assert_equal(nil, MindFreak.setup(SET_ONE.dup, [0]))
-    assert_equal(
-      "tape = Array.new(1,0)\npointer = 0\ntape[pointer] = 1",
-      MindFreak.to_ruby
-    )
-  end
-
-  def test_to_ruby_sum
-    # Hash tape
-    assert_equal(nil, MindFreak.setup(SUM.dup, []))
-    assert_equal(
-      "tape = Hash.new(0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
-      MindFreak.to_ruby
-    )
-    # Array tape
-    assert_equal(nil, MindFreak.setup(SUM.dup, [0]))
-    assert_equal(
-      "tape = Array.new(1,0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
-      MindFreak.to_ruby
-    )
-  end
-
-  #-----------------------------------------------
-  # to C
-  #-----------------------------------------------
-
-  def test_to_c_set_one
-    # Default size tape
-    assert_equal(nil, MindFreak.setup(SET_ONE.dup, []))
-    assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
-      MindFreak.to_c
-    )
-    # User size tape
-    tape = [0,0]
-    assert_equal(nil, MindFreak.setup(SET_ONE.dup, tape))
-    assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
-      MindFreak.to_c
-    )
-  end
-
-  def test_to_c_sum
-    # Default size tape
-    assert_equal(nil, MindFreak.setup(SUM.dup, []))
-    assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
-      MindFreak.to_c
-    )
-    # User size tape
-    tape = [0,0]
-    assert_equal(nil, MindFreak.setup(SUM.dup, tape))
-    assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
-      MindFreak.to_c
-    )
   end
 end
