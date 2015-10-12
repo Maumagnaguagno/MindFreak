@@ -434,7 +434,7 @@ if $0 == __FILE__
       # Input
       filename = ARGV[0]
       mode = ARGV[1] || 'interpreter'
-      # Bounded or infinity tape
+      # Tape size
       bounds = ARGV[2] ? ARGV[2].to_i : MindFreak::TAPE_DEFAULT_SIZE
       tape = bounds > 0 ? Array.new(bounds, 0) : Hash.new(0)
       # Setup
