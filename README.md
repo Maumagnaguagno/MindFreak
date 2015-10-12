@@ -65,7 +65,8 @@ In bold what is supported by this project:
 - Ignore comments and check brackets before execution
 - Interpreter mode, apply instructions as user provided
 - Bytecode mode (cluster repeated instructions to achieve speed-up)
-- Ruby Mode (transform bytecode to ruby and eval to get even more speed)
+- Bytecode2 mode (uses optimized bytecode to achieve even more speed-up)
+- Ruby Mode (transform optimized bytecode to ruby and eval to get even more speed)
 - The C mode works like the Ruby one, but cells are limited to fixed size and bounded tape
 - Output tape when interrupted (for interpreted and bytecode modes, not for Ruby or C)
 
@@ -81,6 +82,6 @@ An unbounded tape is slower and C mode will use the default size to allocate the
 The main of this project is just an example of the API, you can run all modes in sequence if you like.
 
 ### ToDo's
-- Generate Ruby and C code with non-blank tape
+- Generate C code with non-blank tape
 - Step-by-step/interactive mode, breakpoint
 - Add examples
