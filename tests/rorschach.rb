@@ -171,7 +171,7 @@ class Rorschach < Test::Unit::TestCase
     pointer = 0
     assert_equal(nil, MindFreak.check_program(program))
     assert_equal(SET_ONE, program)
-    eval(MindFreak.to_ruby(program, tape, true))
+    eval(MindFreak.to_ruby(program))
     assert_equal([1], tape)
     assert_equal(0, pointer)
   end
@@ -184,7 +184,7 @@ class Rorschach < Test::Unit::TestCase
     pointer = 0
     assert_equal(nil, MindFreak.check_program(program))
     assert_equal('[->+<]', program)
-    eval(MindFreak.to_ruby(program, tape, true))
+    eval(MindFreak.to_ruby(program))
     assert_equal([0, 15], tape)
     assert_equal(0, pointer)
   end
@@ -199,7 +199,7 @@ class Rorschach < Test::Unit::TestCase
     pointer = 0
     assert_equal(nil, MindFreak.check_program(program))
     # Connect input and output local variables
-    eval(MindFreak.to_ruby(program, tape, true, 'input', 'output'))
+    eval(MindFreak.to_ruby(program, nil, 'input', 'output'))
     assert_equal([111, 33], tape)
     assert_equal(0, pointer)
     assert_equal('Helo', input.string)

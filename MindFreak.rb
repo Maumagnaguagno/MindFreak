@@ -204,9 +204,9 @@ module MindFreak
   # to Ruby
   #-----------------------------------------------
 
-  def to_ruby(program, tape, evaluation = false, input = 'STDIN', output = 'STDOUT')
+  def to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')
     # Tape definition
-    code = evaluation ? '' : tape.empty? ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape.size},0)\npointer = 0"
+    code = tape ? tape.empty? ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape.size},0)\npointer = 0" : ''
     indent = ''
     # Match bytecode
     optimize_bytecode(make_bytecode(program)).each {|c,arg,offset,set_multiplier|
@@ -464,7 +464,7 @@ if $0 == __FILE__
         puts 'Ruby Mode'
         t = Time.now.to_f
         pointer = 0
-        eval(code = MindFreak.to_ruby(program, tape, true))
+        eval(code = MindFreak.to_ruby(program))
         puts "\nTime: #{Time.now.to_f - t}s"
         File.open("#{filename}.rb",'w') {|file| file << code} if keep
       when 'c'
