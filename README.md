@@ -72,7 +72,7 @@ In bold what is supported by this project:
 
 ### Execution
 ```
-ruby MindFreak.rb [filename] [interpreter|bytecode|rb|c] [bounds]
+ruby MindFreak.rb filename.bf [interpreter|bytecode|bytecode2|rb|c] [bounds]
 ```
 
 The current implementation expects the brainfuck filename, execution mode and tape bounds.
@@ -80,6 +80,30 @@ The C mode is the fastest, it requires GCC in your path so you can compile and h
 The tape is bounded by default to 500 cells, make it 0 to support any size.
 An unbounded tape is slower and C mode will use the default size to allocate the tape.
 The main of this project is just an example of the API, you can run all modes in sequence if you like.
+
+### API
+Attributes | Type     | Initial value
+---------- | -------- | -------------
+ pointer   | reader   | nil
+ input     | accessor | STDIN
+ output    | accessor | STDOUT
+ debug     | accessor | nil
+
+The methods require a String containing the program and an Array or Hash to be used as tape.
+The bytecode generated is an Array or Arrays and differ from the basic to the optimized version.
+- ```check_program(program)``` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns nil.
+- ```run_interpreter(program, tape)``` executes the slow interpreter, reading from input, writing to output while using the provided tape.
+- ```run_bytecode(program, tape)``` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ```run_bytecode2(program, tape)``` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ```to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')``` returns a string with a Ruby equivalent to the program provided. If no tape is provided the string will not contain a tape and pointer declaration, this forces ```eval``` to use external variables.
+- ```to_c(program, tape, type = 'unsigned int')``` returns a string with a C equivalent to the program provided. The type contains the cell type being used.
+- ```make_bytecode(program)``` returns an Array with the bytecodes.
+- ```optimize_bytecode(bytecode)``` returns an Array with the optimized bytecodes.
+
+The basic bytecode is ```[instruction, argument]```, where **instruction** corresponds to the byte value of each char used in BrainFuck and **argument** to the amount of times this instruction is used or the index to jump in case of ```[``` or ```]```.
+The extended bytecode adds a multiply instruction and more information to each bytecode.
+Contains ```[instruction, argument, offset, set or multiplier]```, where offset is added to the current pointer, set can be used to set a cell to a value or multiplied by a factor.
+The test file contains several examples about the usage of the bytecode and should be used as a guide.
 
 ### ToDo's
 - Generate C code with non-blank tape
