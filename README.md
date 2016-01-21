@@ -11,14 +11,14 @@ Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-br
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
 The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape.
 You only have access to this set of instructions:
-- **>** 	move pointer to the right ```pointer += 1```
-- **<** 	move pointer to the left ```pointer -= 1```
-- **+** 	increment value of cell ```tape[pointer] += 1```
-- **-** 	decrement value of cell ```tape[pointer] -= 1```
-- **.** 	output the value of cell, usually this byte is mapped to a character ```output(tape[pointer])```
-- **,** 	input the value of cell, usually a char is converted to a byte ```tape[pointer] = input```
-- **[** 	if the cell at the pointer is zero, jumps the block ```while tape[pointer] != 0```
-- **]** 	if the cell at the pointer is nonzero, then jump back to the beginning of block ```end of while```
+- **>** move pointer to the right ```pointer += 1```
+- **<** move pointer to the left ```pointer -= 1```
+- **+** increment value of cell ```tape[pointer] += 1```
+- **-** decrement value of cell ```tape[pointer] -= 1```
+- **.** output the value of cell, usually this byte is mapped to a character ```output(tape[pointer])```
+- **,** input the value of cell, usually a char is converted to a byte ```tape[pointer] = input```
+- **[** if the cell at the pointer is zero, jumps the block ```while tape[pointer] != 0```
+- **]** if the cell at the pointer is nonzero, then jump back to the beginning of block ```end of while```
 
 ### Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
@@ -82,12 +82,12 @@ An unbounded tape is slower and C mode will use the default size to allocate the
 The main of this project is just an example of the API, you can run all modes in sequence if you like.
 
 ### API
-Attributes | Type     | Initial value
----------- | -------- | -------------
- pointer   | reader   | nil
- input     | accessor | STDIN
- output    | accessor | STDOUT
- debug     | accessor | nil
+The entire MindFreak is contained in a module with the same name.
+It has 4 attributes:
+- attr_reader pointer, with the position of the current cell for interpreted execution modes, starts with ```nil```.
+- attr_accessor input, read external data from an object that responds to ```getbyte```, starts with ```STDIN```.
+- attr_accessor output, write external data to an object that responds to ```putc``` and ```print```, starts with ```STDOUT```.
+- attr_accessor debug,  print warnings when set to anything but ```false``` or ```nil```, starts with ```nil```.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array or Arrays and differ from the basic to the optimized version.
@@ -100,10 +100,15 @@ The bytecode generated is an Array or Arrays and differ from the basic to the op
 - ```make_bytecode(program)``` returns an Array with the bytecodes.
 - ```optimize_bytecode(bytecode)``` returns an Array with the optimized bytecodes.
 
-The basic bytecode is ```[instruction, argument]```, where **instruction** corresponds to the byte value of each char used in BrainFuck and **argument** to the amount of times this instruction is used or the index to jump in case of ```[``` or ```]```.
-The extended bytecode adds a multiply instruction and more information to each bytecode.
-Contains ```[instruction, argument, offset, set or multiplier]```, where offset is added to the current pointer, set can be used to set a cell to a value or multiplied by a factor.
-The test file contains several examples about the usage of the bytecode and should be used as a guide.
+The basic bytecode is described by the tuple ```[instruction, argument]```, in which:
+- **instruction** corresponds to the byte value of each instruction char used in BrainFuck;
+- **argument** corresponds to the amount of times this instruction is used or the index to jump in case of ```[``` or ```]```.
+
+The extended bytecode adds a multiply instruction, defined by ```*``` and more information to each bytecode,
+It is described by the tuple ```[instruction, argument, offset, set or multiplier]```, in which:
+- **offset** is added to the current pointer;
+- **set** can be used to set a cell to a value when used by ```+``` or multiplied by a factor when used by ```*```.
+The test file contains several examples about the usage of the bytecode and can be used as a guide.
 
 ### ToDo's
 - Generate C code with non-blank tape
