@@ -37,9 +37,6 @@
 # - Removed program and tape from instance variables
 # - Removed setup
 #-----------------------------------------------
-# TODO
-# - step-by-step/interactive mode, breakpoint
-#-----------------------------------------------
 
 module MindFreak
   extend self
