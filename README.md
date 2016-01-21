@@ -84,10 +84,10 @@ The main of this project is just an example of the API, you can run all modes in
 ### API
 The entire MindFreak is contained in a module with the same name.
 It has 4 attributes:
-- attr_reader pointer, with the position of the current cell for interpreted execution modes, starts with ```nil```.
-- attr_accessor input, read external data from an object that responds to ```getbyte```, starts with ```STDIN```.
-- attr_accessor output, write external data to an object that responds to ```putc``` and ```print```, starts with ```STDOUT```.
-- attr_accessor debug,  print warnings when set to anything but ```false``` or ```nil```, starts with ```nil```.
+- ```attr_reader :pointer```, with the position of the current cell for interpreted execution modes, starts with ```nil```.
+- ```attr_accessor :input```, read external data from an object that responds to ```getbyte```, starts with ```STDIN```.
+- ```attr_accessor :output```, write external data to an object that responds to ```putc``` and ```print```, starts with ```STDOUT```.
+- ```attr_accessor :debug```,  print warnings when set to anything but ```false``` or ```nil```, starts with ```nil```.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array or Arrays and differ from the basic to the optimized version.
