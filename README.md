@@ -90,7 +90,7 @@ It has 4 attributes:
 - ```attr_accessor :debug```,  print warnings when set to anything but ```false``` or ```nil```, starts with ```nil```.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
-The bytecode generated is an Array or Arrays and differ from the basic to the optimized version.
+The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
 - ```check_program(program)``` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns nil.
 - ```run_interpreter(program, tape)``` executes the slow interpreter, reading from input, writing to output while using the provided tape.
 - ```run_bytecode(program, tape)``` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
