@@ -81,10 +81,11 @@ module MindFreak
   #-----------------------------------------------
 
   def run_interpreter(program, tape)
-    program_counter = control = @pointer = 0
     program_size = program.size
+    program_counter = -1
+    control = @pointer = 0
     # Intepreter
-    until program_counter == program_size
+    until (program_counter += 1) == program_size
       case program[program_counter]
       when ?+ # Increment
         tape[@pointer] += 1
@@ -102,8 +103,7 @@ module MindFreak
         if tape[@pointer].zero?
           control = 1
           until control.zero?
-            program_counter += 1
-            case program[program_counter]
+            case program[program_counter += 1]
             when ?[ then control += 1
             when ?] then control -= 1
             end
@@ -113,8 +113,7 @@ module MindFreak
         unless tape[@pointer].zero?
           control = -1
           until control.zero?
-            program_counter -= 1
-            case program[program_counter]
+            case program[program_counter -= 1]
             when ?[ then control += 1
             when ?] then control -= 1
             end
@@ -122,7 +121,6 @@ module MindFreak
         end
       else raise "Unknown instruction: #{program[program_counter]} at position #{program_counter}"
       end
-      program_counter += 1
     end
   end
 
@@ -133,10 +131,11 @@ module MindFreak
   def run_bytecode(program, tape)
     # Bytecode interpreter does not support optimizations
     bytecode = make_bytecode(program)
-    program_counter = @pointer = 0
     program_size = bytecode.size
+    program_counter = -1
+    @pointer = 0
     # Execute
-    until program_counter == program_size
+    until (program_counter += 1) == program_size
       c, arg = bytecode[program_counter]
       case c
       when INCREMENT # Tape
@@ -154,7 +153,6 @@ module MindFreak
         program_counter = arg unless tape[@pointer].zero?
       else raise "Unknown bytecode: #{c} at position #{program_counter}"
       end
-      program_counter += 1
     end
   end
 
@@ -165,10 +163,11 @@ module MindFreak
   def run_bytecode2(program, tape)
     # Bytecode2 interpreter support optimizations
     bytecode = optimize_bytecode(make_bytecode(program))
-    program_counter = @pointer = 0
     program_size = bytecode.size
+    program_counter = -1
+    @pointer = 0
     # Execute
-    until program_counter == program_size
+    until (program_counter += 1) == program_size
       c, arg, offset, set_multiplier = bytecode[program_counter]
       case c
       when INCREMENT # Tape
@@ -193,7 +192,6 @@ module MindFreak
         tape[@pointer + (offset ? arg + offset : arg)] += tape[offset ? @pointer + offset : @pointer] * set_multiplier
       else raise "Unknown bytecode: #{c} at position #{program_counter}"
       end
-      program_counter += 1
     end
   end
 
@@ -344,12 +342,12 @@ module MindFreak
     end
     # Multiplication [->+<]
     memory = Hash.new(0)
-    i = 0
-    while i < bytecode.size
+    i = -1
+    while (i += 1) < bytecode.size
       # Start of loop
       if bytecode[i].first == JUMP
-        j = i.succ
-        while j < bytecode.size
+        j = i
+        while (j += 1) < bytecode.size
           # Inner loop has been found
           if bytecode[j].first == JUMP
             i = j
@@ -378,14 +376,12 @@ module MindFreak
               break
             end
           end
-          j += 1
         end
       end
-      i += 1
     end
     # Offset >+< <.>
-    i = 0
-    while i < bytecode.size.pred
+    i = -1
+    while (i += 1) < bytecode.size.pred
       if (offset = bytecode[i]).first == FORWARD and (next_inst = bytecode[i.succ]).first < JUMP
         # Original instruction uses offset
         bytecode[i] = [next_inst.first, next_inst[1], offset[1], next_inst[3]]
@@ -397,14 +393,13 @@ module MindFreak
         else bytecode[i.succ] = offset
         end
       end
-      i += 1
     end
     # Remove last forwards
     bytecode.pop while bytecode.last.first == FORWARD
     # Rebuild jump arguments
     jump_stack = []
-    i = 0
-    while i < bytecode.size
+    i = -1
+    while (i += 1) < bytecode.size
       if bytecode[i].first == JUMP
         jump_stack << i
       elsif bytecode[i].first == JUMPBACK
@@ -412,7 +407,6 @@ module MindFreak
         bytecode[i][1] = jump_stack.last
         bytecode[jump_stack.pop][1] = i
       end
-      i += 1
     end
     puts "Bytecode optimized to size: #{bytecode.size}" if @debug
     bytecode
