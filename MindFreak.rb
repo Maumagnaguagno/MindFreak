@@ -476,8 +476,12 @@ if $0 == __FILE__
       end
     end
   rescue Interrupt
-    puts "\nTape: #{tape.inspect}", "Pointer: #{MindFreak.pointer}" if mode == 'interpreter' or mode == 'bytecode' or mode == 'bytecode2'
-    puts "\nTape: #{tape.inspect}", "Pointer: #{pointer}" if mode == 'rb'
+    case mode
+    when 'interpreter', 'bytecode', 'bytecode2'
+      puts "\nTape: #{tape.inspect}", "Pointer: #{MindFreak.pointer}"
+    when 'rb'
+      puts "\nTape: #{tape.inspect}", "Pointer: #{pointer}"
+    end
   rescue
     puts $!, $@
     STDIN.gets
