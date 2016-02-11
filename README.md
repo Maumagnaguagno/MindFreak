@@ -7,7 +7,7 @@ Ended up discovering a lot of crazy ideas about bytecode and macro optimizations
 Really fun to do in a weekend, but do not let the funny name fool you, would take a lifetime to master.
 Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) and the awesome implementation of a Mandelbrot fractal generator by Erik Bosman.
 
-### What is BrainFuck?
+## What is BrainFuck?
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
 The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape.
 You only have access to this set of instructions:
@@ -20,7 +20,7 @@ You only have access to this set of instructions:
 - **[** if the cell at the pointer is zero, jumps the block ```while tape[pointer] != 0```
 - **]** if the cell at the pointer is nonzero, then jump back to the beginning of block ```end of while```
 
-### Examples
+## Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
 The lack of common operators makes even simple things, like setting a variable to a zero, a loop:  
 ```
@@ -51,8 +51,8 @@ This project contracts several operations at the first level of bytecode generat
 Which is awesome and sad at the same time, maybe I will never have time to implement them all.
 Since I can output C code we can expect GCC to solve this problem for us.
 
-### Compatibility
-Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex to support.
+## Compatibility
+Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex.
 In bold what is supported by this project:
 - Size of cell (bit, **byte/unsigned char**, **word/unsigned int**, **other C fixed size**, **unbounded**)
 - Size of tape (**pre-allocated**, **allocated as required**)
@@ -68,9 +68,9 @@ In bold what is supported by this project:
 - Bytecode2 mode (uses optimized bytecode to achieve even more speed-up)
 - Ruby Mode (transform optimized bytecode to ruby and eval to get even more speed)
 - The C mode works like the Ruby one, but cells are limited to fixed size and bounded tape
-- Output tape when interrupted (for interpreted and bytecode modes, not for Ruby or C)
+- Output tape when interrupted (except C mode)
 
-### Execution
+## Execution
 ```
 ruby MindFreak.rb filename.bf [interpreter|bytecode|bytecode2|rb|c] [bounds]
 ```
@@ -81,7 +81,7 @@ The tape is bounded by default to 500 cells, make it 0 to support any size.
 An unbounded tape is slower and C mode will use the default size to allocate the tape.
 The main of this project is just an example of the API, you can run all modes in sequence if you like.
 
-### API
+## API
 MindFreak is a module with 4 attributes:
 - ```attr_reader :pointer```, with the position of the current cell for interpreted execution modes, starts with ```nil```.
 - ```attr_accessor :input```, read external data from an object that responds to ```getbyte```, starts with ```STDIN```.
@@ -109,7 +109,7 @@ It is described by the tuple ```[instruction, argument, offset, set or multiplie
 - **set** can be used to set a cell to a value when used by ```+``` or multiplied by a factor when used by ```*```.
 The test file contains several examples about the usage of the bytecode and can be used as a guide.
 
-### ToDo's
-- Generate C code with non-blank tape
+## ToDo's
+- Generate C code with non-blank initial tape
 - Step-by-step/interactive mode, breakpoint
 - Add examples
