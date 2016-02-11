@@ -5,7 +5,7 @@ Started this project during October 2013 to see something easy to parse for a ch
 The goal was to understand how much could be optimized from the source.
 Ended up discovering a lot of crazy ideas about bytecode and macro optimizations.
 Really fun to do in a weekend, but do not let the funny name fool you, would take a lifetime to master.
-Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) and the awesome implementation of a Mandelbrot fractal generator by Erik Bosman.
+Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) and the awesome implementation of a [Mandelbrot fractal generator](mandelbrot.bf) by Erik Bosman.
 
 ## What is BrainFuck?
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
@@ -82,7 +82,7 @@ An unbounded tape is slower and C mode will use the default size to allocate the
 The main of this project is just an example of the API, you can run all modes in sequence if you like.
 
 ## API
-MindFreak is a module with 4 attributes:
+[MindFreak](MindFreak.rb) is a module with 4 attributes:
 - ```attr_reader :pointer```, with the position of the current cell for interpreted execution modes, starts with ```nil```.
 - ```attr_accessor :input```, read external data from an object that responds to ```getbyte```, starts with ```STDIN```.
 - ```attr_accessor :output```, write external data to an object that responds to ```putc``` and ```print```, starts with ```STDOUT```.
@@ -107,7 +107,8 @@ The extended bytecode adds a multiply instruction, defined by ```*``` and more i
 It is described by the tuple ```[instruction, argument, offset, set or multiplier]```, in which:
 - **offset** is added to the current pointer;
 - **set** can be used to set a cell to a value when used by ```+``` or multiplied by a factor when used by ```*```.
-The test file contains several examples about the usage of the bytecode and can be used as a guide.
+
+The [test file](tests/rorschach.rb) contains several examples about the usage of the bytecode and can be used as a guide.
 
 ## ToDo's
 - Generate C code with non-blank initial tape
