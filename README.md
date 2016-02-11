@@ -82,7 +82,7 @@ An unbounded tape is slower and C mode will use the default size to allocate the
 The main of this project is just an example of the API, you can run all modes in sequence if you like.
 
 ## API
-[MindFreak](MindFreak.rb) is a module with 4 attributes:
+[**MindFreak**](MindFreak.rb) is a module with 4 attributes:
 - ```attr_reader :pointer```, with the position of the current cell for interpreted execution modes, starts with ```nil```.
 - ```attr_accessor :input```, read external data from an object that responds to ```getbyte```, starts with ```STDIN```.
 - ```attr_accessor :output```, write external data to an object that responds to ```putc``` and ```print```, starts with ```STDOUT```.
