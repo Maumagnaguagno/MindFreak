@@ -214,8 +214,8 @@ module MindFreak
         c = "tape[pointer#{"+#{offset}" if offset}]"
         code << "\n#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
       when READ # Read
-        c = "tape[pointer#{"+#{offset}" if offset}] = #{input}.getbyte"
-        code << "\n#{indent}#{arg > 1 ? "#{arg}.times {#{c}}" : c}"
+        code << "\n#{indent}#{arg.pred}.times {#{input}.getbyte}" if arg > 1
+        code << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] = #{input}.getbyte"
       when JUMP # Jump if zero
         code << "\n#{indent}until tape[pointer].zero?"
         indent << '  '
@@ -253,8 +253,8 @@ module MindFreak
         c = "putchar(*(pointer#{"+#{offset}" if offset}));"
         code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
       when READ # Read
-        c = "(*(pointer#{"+#{offset}" if offset})) = getchar();"
-        code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
+        code << "\n#{indent}for(unsigned int i = #{arg.pred}; i; --i) getchar();" if arg > 1
+        code << "\n#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
       when JUMP # Jump if zero
         code << "\n#{indent}while(*pointer){"
         indent << '  '

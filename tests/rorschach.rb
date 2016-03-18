@@ -240,6 +240,21 @@ class Rorschach < Test::Unit::TestCase
     )
   end
 
+  def test_to_ruby_read_consecutive
+    program = ',,,,,'
+    assert_nil(MindFreak.check_program(program))
+    # Hash tape
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\n4.times {STDIN.getbyte}\ntape[pointer] = STDIN.getbyte",
+      MindFreak.to_ruby(program, [])
+    )
+    # Array tape
+    assert_equal(
+      "tape = Array.new(1,0)\npointer = 0\n4.times {STDIN.getbyte}\ntape[pointer] = STDIN.getbyte",
+      MindFreak.to_ruby(program, [0])
+    )
+  end
+
   #-----------------------------------------------
   # to C
   #-----------------------------------------------
@@ -272,6 +287,22 @@ class Rorschach < Test::Unit::TestCase
     tape = [0,0]
     assert_equal(
       "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      MindFreak.to_c(program, tape)
+    )
+  end
+
+  def test_to_c_read_consecutive
+    program = ',,,,,'
+    assert_nil(MindFreak.check_program(program))
+    # Default size tape
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
+      MindFreak.to_c(program, [])
+    )
+    # User size tape
+    tape = [0,0]
+    assert_equal(
+      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
       MindFreak.to_c(program, tape)
     )
   end
