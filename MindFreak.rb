@@ -457,14 +457,14 @@ if $0 == __FILE__
         pointer = 0
         eval(code = MindFreak.to_ruby(program))
         puts "\nTime: #{Time.now.to_f - t}s"
-        File.open("#{filename}.rb",'w') {|file| file << code} if keep
+        IO.write("#{filename}.rb", code) if keep
       when 'c'
         puts 'C Mode', 'Compiling'
         # Compile
         file_c = "#{filename}.c"
         file_exe = "#{filename}.exe"
         t = Time.now.to_f
-        File.open(file_c,'w') {|file| file << MindFreak.to_c(program, tape)}
+        IO.write(file_c, MindFreak.to_c(program, tape))
         system("gcc #{file_c} -o #{file_exe} -O2")
         puts "Compilation time: #{Time.now.to_f - t}s"
         # Execute
