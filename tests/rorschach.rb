@@ -31,12 +31,14 @@ class Rorschach < Test::Unit::TestCase
 
   def test_check_program_open_bracket_exception
     # Expected to raise an exception
-    assert_raises(RuntimeError) {MindFreak.check_program('[-[')}
+    e = assert_raises(RuntimeError) {MindFreak.check_program('[-[')}
+    assert_equal('Expected [', e.message)
   end
 
   def test_check_program_close_bracket_exception
     # Expected to raise an exception
-    assert_raises(RuntimeError) {MindFreak.check_program('[-]]')}
+    e = assert_raises(RuntimeError) {MindFreak.check_program('[-]]')}
+    assert_equal('Unexpected ] found', e.message)
   end
 
   #-----------------------------------------------
