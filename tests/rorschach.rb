@@ -16,14 +16,14 @@ class Rorschach < Test::Unit::TestCase
   #-----------------------------------------------
 
   def test_check_program_empty
-    # Expected to raise an exception
+    # Returns same string
     program = ''
     assert_nil(MindFreak.check_program(program))
     assert_equal('', program)
   end
 
   def test_check_program_comment_removal
-    # Expected to raise an exception
+    # Remove unknown characters
     program = "abc<>[]--++#,.()123_-=;\n"
     assert_nil(MindFreak.check_program(program))
     assert_equal('<>[]--++,.-', program)
