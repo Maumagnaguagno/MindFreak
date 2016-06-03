@@ -1,5 +1,5 @@
 # MindFreak [![Build Status](https://travis-ci.org/Maumagnaguagno/MindFreak.svg)](https://travis-ci.org/Maumagnaguagno/MindFreak)
-A BrainFuck interpreter with bytecode and language conversion
+**A BrainFuck interpreter with bytecode and language conversion**
 
 Started this project during October 2013 to see something easy to parse for a change.
 The goal was to understand how much could be optimized from the source.
