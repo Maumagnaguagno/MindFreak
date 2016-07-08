@@ -325,8 +325,8 @@ module MindFreak
   def optimize_bytecode(bytecode)
     # Clear [-] [+] or set [-]+ [+]-
     clear = [INCREMENT, 0, nil, true]
-    i = 0
-    while i < bytecode.size
+    i = -1
+    while (i += 1) < bytecode.size
       if bytecode[i].first == JUMP and bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
         # Set
         if bytecode[i+3].first == INCREMENT
@@ -338,7 +338,6 @@ module MindFreak
           bytecode.slice!(i.succ,2)
         end
       end
-      i += 1
     end
     # Multiplication [->+<]
     memory = Hash.new(0)
