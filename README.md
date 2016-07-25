@@ -11,14 +11,14 @@ Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-br
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
 The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape.
 You only have access to this set of instructions:
-- **>** move pointer to the right ```pointer += 1```
-- **<** move pointer to the left ```pointer -= 1```
-- **+** increment value of cell ```tape[pointer] += 1```
-- **-** decrement value of cell ```tape[pointer] -= 1```
-- **.** output the value of cell, usually this byte is mapped to a character ```output(tape[pointer])```
-- **,** input the value of cell, usually a char is converted to a byte ```tape[pointer] = input```
-- **[** if the cell at the pointer is zero, jumps the block ```while tape[pointer] != 0```
-- **]** if the cell at the pointer is nonzero, then jump back to the beginning of block ```end of while```
+- **>** move pointer to the right ``pointer += 1``
+- **<** move pointer to the left ``pointer -= 1``
+- **+** increment value of cell ``tape[pointer] += 1``
+- **-** decrement value of cell ``tape[pointer] -= 1``
+- **.** output the value of cell, usually this byte is mapped to a character ``output(tape[pointer])``
+- **,** input the value of cell, usually a char is converted to a byte ``tape[pointer] = input``
+- **[** if the cell at the pointer is zero, jumps the block ``while tape[pointer] != 0``
+- **]** if the cell at the pointer is nonzero, then jump back to the beginning of block ``end of while``
 
 ## Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
@@ -83,30 +83,30 @@ The main of this project is just an example of the API, you can run all modes in
 
 ## API
 [**MindFreak**](MindFreak.rb) is a module with 4 attributes:
-- ```attr_reader :pointer```, with the position of the current cell for interpreted execution modes, starts with ```nil```.
-- ```attr_accessor :input```, read external data from an object that responds to ```getbyte```, starts with ```STDIN```.
-- ```attr_accessor :output```, write external data to an object that responds to ```putc``` and ```print```, starts with ```STDOUT```.
-- ```attr_accessor :debug```,  print warnings when set to anything but ```false``` or ```nil```, starts with ```nil```.
+- ``attr_reader :pointer``, with the position of the current cell for interpreted execution modes, starts with ``nil``.
+- ``attr_accessor :input``, read external data from an object that responds to ``getbyte``, starts with ``STDIN``.
+- ``attr_accessor :output``, write external data to an object that responds to ``putc`` and ``print``, starts with ``STDOUT``.
+- ``attr_accessor :debug``,  print warnings when set to anything but ``false`` or ``nil``, starts with ``nil``.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
-- ```check_program(program)``` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns nil.
-- ```run_interpreter(program, tape)``` executes the slow interpreter, reading from input, writing to output while using the provided tape.
-- ```run_bytecode(program, tape)``` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
-- ```run_bytecode2(program, tape)``` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
-- ```to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')``` returns a string with a Ruby equivalent to the program provided. If no tape is provided the string will not contain a tape and pointer declaration, this forces ```eval``` to use external variables.
-- ```to_c(program, tape, type = 'unsigned int')``` returns a string with a C equivalent to the program provided. The type contains the cell type being used.
-- ```make_bytecode(program)``` returns an Array with the bytecodes.
-- ```optimize_bytecode(bytecode)``` returns an Array with the optimized bytecodes.
+- ``check_program(program)`` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns nil.
+- ``run_interpreter(program, tape)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
+- ``run_bytecode(program, tape)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ``run_bytecode2(program, tape)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ``to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')`` returns a string with a Ruby equivalent to the program provided. If no tape is provided the string will not contain a tape and pointer declaration, this forces ``eval`` to use external variables.
+- ``to_c(program, tape, type = 'unsigned int')`` returns a string with a C equivalent to the program provided. The type contains the cell type being used.
+- ``make_bytecode(program)`` returns an Array with the bytecodes.
+- ``optimize_bytecode(bytecode)`` returns an Array with the optimized bytecodes.
 
-The basic bytecode is described by the tuple ```[instruction, argument]```, in which:
+The basic bytecode is described by the tuple ``[instruction, argument]``, in which:
 - **instruction** corresponds to the byte value of each instruction char used in BrainFuck;
-- **argument** corresponds to the amount of times this instruction is used or the index to jump in case of ```[``` or ```]```.
+- **argument** corresponds to the amount of times this instruction is used or the index to jump in case of ``[`` or ``]``.
 
-The extended bytecode adds a multiply instruction, defined by ```*``` and more information to each bytecode,
-It is described by the tuple ```[instruction, argument, offset, set or multiplier]```, in which:
+The extended bytecode adds a multiply instruction, defined by ``*`` and more information to each bytecode,
+It is described by the tuple ``[instruction, argument, offset, set or multiplier]``, in which:
 - **offset** is added to the current pointer;
-- **set** can be used to set a cell to a value when used by ```+``` or multiplied by a factor when used by ```*```.
+- **set** can be used to set a cell to a value when used by ``+`` or multiplied by a factor when used by ``*``.
 
 The [test file](tests/rorschach.rb) contains several examples about the usage of the bytecode and can be used as a guide.
 
