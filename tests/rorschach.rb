@@ -481,6 +481,55 @@ class Rorschach < Test::Unit::TestCase
     )
   end
 
+  def test_bytecode_hello_world
+    program = '>+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.>>>
+    ++++++++[<++++>-]<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++
+    .------.--------.>>+.'
+    # Remove spaces and newlines
+    assert_nil(MindFreak.check_program(program))
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    assert_equal(
+      [
+        [MindFreak::INCREMENT, 9, 1, nil],
+        [MindFreak::MULTIPLY, -1, 1, 8],
+        [MindFreak::INCREMENT, 0, 1, true],
+        [MindFreak::WRITE, 1],
+        [MindFreak::INCREMENT, 7, 1, nil],
+        [MindFreak::MULTIPLY, -1, 1, 4],
+        [MindFreak::INCREMENT, 0, 1, true],
+        [MindFreak::INCREMENT, 1],
+        [MindFreak::WRITE, 1],
+        [MindFreak::INCREMENT, 7],
+        [MindFreak::WRITE, 2],
+        [MindFreak::INCREMENT, 3],
+        [MindFreak::WRITE, 1],
+        [MindFreak::INCREMENT, 8, 3, nil],
+        [MindFreak::MULTIPLY, -1, 3, 4],
+        [MindFreak::INCREMENT, 0, 3, true],
+        [MindFreak::WRITE, 1, 2, nil],
+        [MindFreak::INCREMENT, 10, 5, nil],
+        [MindFreak::MULTIPLY, -1, 5, 9],
+        [MindFreak::INCREMENT, 0, 5, true],
+        [MindFreak::INCREMENT, -3, 4, nil],
+        [MindFreak::WRITE, 1, 4, nil],
+        [MindFreak::WRITE, 1],
+        [MindFreak::INCREMENT, 3],
+        [MindFreak::WRITE, 1],
+        [MindFreak::INCREMENT, -6],
+        [MindFreak::WRITE, 1],
+        [MindFreak::INCREMENT, -8],
+        [MindFreak::WRITE, 1],
+        [MindFreak::INCREMENT, 1, 2, nil],
+        [MindFreak::WRITE, 1, 2, nil]
+      ],
+      MindFreak.optimize_bytecode(MindFreak.make_bytecode(program))
+    )
+    # Using StringIO to simulate output
+    MindFreak.output = StringIO.new
+    MindFreak.run_interpreter(program, Array.new(10, 0))
+    assert_equal('Hello World!', MindFreak.output.string)
+  end
+
   def test_bytecode_mandelbrot
     # Check bytecode size
     program = IO.read('mandelbrot.bf')
