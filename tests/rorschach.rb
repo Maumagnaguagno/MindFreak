@@ -534,7 +534,6 @@ class Rorschach < Test::Unit::TestCase
     filename = 'mandelbrot.bf'
     file_c = "#{filename}.c"
     file_exe = "#{filename}.exe"
-    output_txt = 'output.txt'
     # Check bytecode size
     program = IO.read(filename)
     assert_nil(MindFreak.check_program(program))
@@ -543,15 +542,13 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(2248, MindFreak.optimize_bytecode(bytecode).size)
     # Compare output
     File.delete(file_c) if File.exist?(file_c)
-    File.delete(output_txt) if File.exist?(output_txt)
+    File.delete(file_exe) if File.exist?(file_exe)
     IO.write(file_c, MindFreak.to_c(program))
     system("gcc #{file_c} -o #{file_exe} -O2")
-    system("#{file_exe} > #{output_txt}")
-    assert_equal(DATA.read, IO.read(output_txt))
+    assert_equal(DATA.read, `./#{file_exe}`)
   ensure
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)
-    File.delete(output_txt) if File.exist?(output_txt)
   end
 end
 
