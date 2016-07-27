@@ -95,7 +95,7 @@ The bytecode generated is an Array of Arrays and differ from the basic to the op
 - ``run_bytecode(program, tape)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
 - ``run_bytecode2(program, tape)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
 - ``to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')`` returns a string with a Ruby equivalent to the program provided. If no tape is provided the string will not contain a tape and pointer declaration, this forces ``eval`` to use external variables.
-- ``to_c(program, tape, type = 'unsigned int')`` returns a string with a C equivalent to the program provided. The type contains the cell type being used.
+- ``to_c(program, tape = nil, type = 'unsigned int')`` returns a string with a C equivalent to the program provided. The type contains the cell type being used. If no tape is provided the default tape size is used.
 - ``make_bytecode(program)`` returns an Array with the bytecodes.
 - ``optimize_bytecode(bytecode)`` returns an Array with the optimized bytecodes.
 

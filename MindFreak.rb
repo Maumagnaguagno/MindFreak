@@ -234,8 +234,8 @@ module MindFreak
   # to C
   #-----------------------------------------------
 
-  def to_c(program, tape, type = 'unsigned int')
-    if (tape_size = tape.size).zero?
+  def to_c(program, tape = nil, type = 'unsigned int')
+    if not tape or (tape_size = tape.size).zero?
       tape_size = TAPE_DEFAULT_SIZE
       puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
     end
