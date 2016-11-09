@@ -67,7 +67,7 @@ module MindFreak
   def check_program(program)
     # Remove comments and check balanced brackets
     control = 0
-    program.gsub!(/[^-+><.,\[\]]/,'')
+    program.delete!('^-+><.,[]')
     program.each_byte {|c|
       if c == JUMP then control += 1
       elsif c == JUMPBACK and (control -= 1) < 0 then raise 'Unexpected ] found'
