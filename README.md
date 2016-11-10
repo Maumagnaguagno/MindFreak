@@ -103,7 +103,7 @@ The basic bytecode is described by the tuple ``[instruction, argument]``, in whi
 - **instruction** corresponds to the byte value of each instruction char used in BrainFuck;
 - **argument** corresponds to the amount of times this instruction is used or the index to jump in case of ``[`` or ``]``.
 
-The extended bytecode adds a multiply instruction, defined by ``*`` and more information to each bytecode,
+The extended bytecode adds a multiply instruction, defined by ``*`` and more information to each bytecode.
 It is described by the tuple ``[instruction, argument, offset, set or multiplier]``, in which:
 - **offset** is added to the current pointer;
 - **set** can be used to set a cell to a value when used by ``+`` or multiplied by a factor when used by ``*``.
