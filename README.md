@@ -90,7 +90,7 @@ The main of this project is just an example of the API, you can run all modes in
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
-- ``check_program(program)`` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns nil.
+- ``check_program(program)`` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns ``nil``.
 - ``run_interpreter(program, tape)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
 - ``run_bytecode(program, tape)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
 - ``run_bytecode2(program, tape)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
