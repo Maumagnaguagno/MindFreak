@@ -353,8 +353,7 @@ module MindFreak
             # Extract data
             pointer = 0
             i.succ.upto(j.pred) {|k|
-              k = bytecode[k]
-              if k.first == FORWARD
+              if (k = bytecode[k]).first == FORWARD
                 pointer += k[1]
               elsif k.first == INCREMENT and not k[3]
                 memory[pointer] += k[1]
