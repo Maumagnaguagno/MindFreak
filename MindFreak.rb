@@ -375,35 +375,38 @@ module MindFreak
         end
       end
     end
-    # Offset >+< <.>
-    i = -1
-    while (i += 1) < bytecode.size.pred
-      if (offset = bytecode[i]).first == FORWARD and (next_inst = bytecode[i.succ]).first < JUMP
-        # Original instruction uses offset
-        (bytecode[i] = next_inst.equal?(clear) ? next_inst.dup : next_inst)[2] = offset[1]
-        # Push offset to next forward if they do not nullify
-        if bytecode[i+2] and bytecode[i+2].first == FORWARD
-          bytecode.delete_at(i+2) if (bytecode[i+2][1] += offset[1]).zero?
-          bytecode.delete_at(i.succ)
-        # Swap forward with original instruction
-        else bytecode[i.succ] = offset
-        end
-      end
-    end
-    # Remove last forwards
-    bytecode.pop while bytecode.last.first == FORWARD
-    # Rebuild jump arguments
     jump_stack = []
     i = -1
-    while (i += 1) < bytecode.size
-      if bytecode[i].first == JUMP
+    while (i += 1) < bytecode.size.pred
+      case bytecode[i].first
+      # Offset >+< <.>
+      when FORWARD
+        if (next_inst = bytecode[i.succ]).first < JUMP
+          # Original instruction uses offset
+          offset = bytecode[i]
+          (bytecode[i] = next_inst.equal?(clear) ? next_inst.dup : next_inst)[2] = offset[1]
+          # Push offset to next forward if they do not nullify
+          if bytecode[i+2] and bytecode[i+2].first == FORWARD
+            bytecode.delete_at(i+2) if (bytecode[i+2][1] += offset[1]).zero?
+            bytecode.delete_at(i.succ)
+          # Swap forward with original instruction
+          else bytecode[i.succ] = offset
+          end
+        end
+      # Rebuild jump index argument, only works for bytecode
+      when JUMP
         jump_stack << i
-      elsif bytecode[i].first == JUMPBACK
-        # Jump program counter to index, only works for bytecode
+      when JUMPBACK
         bytecode[i][1] = jump_stack.last
         bytecode[jump_stack.pop][1] = i
       end
     end
+    unless jump_stack.empty?
+      bytecode[i][1] = jump_stack.last
+      bytecode[jump_stack.pop][1] = i
+    end
+    # Remove last forwards
+    bytecode.pop while bytecode.last.first == FORWARD
     puts "Bytecode optimized to size: #{bytecode.size}" if @debug
     bytecode
   end
