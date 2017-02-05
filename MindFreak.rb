@@ -345,11 +345,11 @@ module MindFreak
       if bytecode[i].first == JUMP
         j = i
         while (j += 1) < bytecode.size
+          case bytecode[j].first
           # Inner loop has been found
-          if bytecode[j].first == JUMP
-            i = j
+          when JUMP then i = j
           # End of loop
-          elsif bytecode[j].first == JUMPBACK
+          when JUMPBACK
             # Extract data
             pointer = 0
             i.succ.upto(j.pred) {|k|
