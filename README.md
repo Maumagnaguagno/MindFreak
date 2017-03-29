@@ -22,7 +22,7 @@ You only have access to this set of instructions:
 
 ## Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
-The lack of common operators makes even simple things, like setting a variable to a zero, a loop:  
+The lack of common operators makes even simple things, like setting a variable to a zero, a loop:
 ```
 Original:  [-]
 Converted: while(tape[pointer] != 0) tape[pointer] -= 1;
@@ -86,7 +86,7 @@ The main of this project is just an example of the API, you can run all modes in
 - ``attr_reader :pointer``, with the position of the current cell for interpreted execution modes, starts with ``nil``.
 - ``attr_accessor :input``, read external data from an object that responds to ``getbyte``, starts with ``STDIN``.
 - ``attr_accessor :output``, write external data to an object that responds to ``putc`` and ``print``, starts with ``STDOUT``.
-- ``attr_accessor :debug``,  print warnings when set to anything but ``false`` or ``nil``, starts with ``nil``.
+- ``attr_accessor :debug``, print warnings when set to anything but ``false`` or ``nil``, starts with ``nil``.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
@@ -108,7 +108,7 @@ It is described by the tuple ``[instruction, argument, offset, set or multiplier
 - **offset** is added to the current pointer;
 - **set** can be used to set a cell to a value when used by ``+`` or multiplied by a factor when used by ``*``.
 
-The [test file](tests/rorschach.rb) contains several examples about the usage of the bytecode and can be used as a guide.
+The [test file](tests/rorschach.rb) contains several examples about the bytecode and can be used as a guide.
 
 ## ToDo's
 - Generate C code with non-blank initial tape
