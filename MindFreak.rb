@@ -389,7 +389,7 @@ module MindFreak
         if (next_inst = bytecode[i.succ]).first < JUMP
           # Original instruction uses offset
           offset = bytecode[i]
-          (bytecode[i] = next_inst.equal?(clear) ? next_inst.dup : next_inst)[2] = offset[1]
+          (bytecode[i] = next_inst.equal?(clear) ? clear.dup : next_inst)[2] = offset[1]
           # Push offset to next forward if they do not nullify
           if bytecode[i+2] and bytecode[i+2].first == FORWARD
             bytecode.delete_at(i+2) if (bytecode[i+2][1] += offset[1]).zero?
