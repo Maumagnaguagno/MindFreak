@@ -22,7 +22,7 @@
 # - C mode
 # Sep 2015
 # - File keep optional
-# - Improved 1.8.7 compatibility
+# - Improve 1.8.7 compatibility
 # Oct 2015
 # - Module based
 # - Tape input
@@ -34,6 +34,11 @@
 # - Bytecode2 interpreter
 # - Removed program and tape from instance variables
 # - Removed setup
+# Mar 2016
+# - Retire 1.8.7
+# -  Record only last byte from consecutive reads
+# Jul 2016
+# - Use default tape size if no tape is provided
 #-----------------------------------------------
 
 module MindFreak
