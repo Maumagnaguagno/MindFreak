@@ -6,40 +6,6 @@
 #-----------------------------------------------
 # BrainFuck interpreter
 #-----------------------------------------------
-# Oct 2013
-# - Created
-# - Unbounded cell value
-# - Bounded ou unbounded tape
-# - Interpret +-><.,[] as commands, the rest as comments
-# - Check brackets before execution
-# - Output tape when interrupted
-# - Object oriented style
-# - Bytecode mode
-# - Ruby Mode
-# Dec 2013
-# - Optimizations
-# Feb 2015
-# - C mode
-# Sep 2015
-# - File keep optional
-# - Improve 1.8.7 compatibility
-# Oct 2015
-# - Module based
-# - Tape input
-# - Less instance variables
-# - Select IO
-# - Multiplication
-# - Ruby and C methods generate code instead of execution
-# - Multiplication optimization
-# - Bytecode2 interpreter
-# - Removed program and tape from instance variables
-# - Removed setup
-# Mar 2016
-# - Retire 1.8.7
-# -  Record only last byte from consecutive reads
-# Jul 2016
-# - Use default tape size if no tape is provided
-#-----------------------------------------------
 
 module MindFreak
   extend self
