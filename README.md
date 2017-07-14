@@ -11,14 +11,14 @@ Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-br
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
 The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape.
 You only have access to this set of instructions:
-- **>** move pointer to the right ``pointer += 1``
-- **<** move pointer to the left ``pointer -= 1``
-- **+** increment value of cell ``tape[pointer] += 1``
-- **-** decrement value of cell ``tape[pointer] -= 1``
-- **.** output the value of cell, usually this byte is mapped to a character ``output(tape[pointer])``
-- **,** input the value of cell, usually a char is converted to a byte ``tape[pointer] = input``
-- **[** if the cell at the pointer is zero, jumps the block ``while tape[pointer] != 0``
-- **]** if the cell at the pointer is nonzero, then jump back to the beginning of block ``end of while``
+- <kbd>></kbd> move pointer to the right ``pointer += 1``
+- <kbd><</kbd> move pointer to the left ``pointer -= 1``
+- <kbd>+</kbd> increment value of cell ``tape[pointer] += 1``
+- <kbd>-</kbd> decrement value of cell ``tape[pointer] -= 1``
+- <kbd>.</kbd> output the value of cell, usually this byte is mapped to a character ``output(tape[pointer])``
+- <kbd>,</kbd> input the value of cell, usually a char is converted to a byte ``tape[pointer] = input``
+- <kbd>[</kbd> if the cell at the pointer is zero, jumps the block ``while tape[pointer] != 0``
+- <kbd>]</kbd> if the cell at the pointer is nonzero, then jump back to the beginning of block ``end of while``
 
 ## Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
