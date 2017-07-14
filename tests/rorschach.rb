@@ -12,32 +12,32 @@ class Rorschach < Test::Unit::TestCase
   end
 
   #-----------------------------------------------
-  # Check program
+  # Check
   #-----------------------------------------------
 
-  def test_check_program_empty
-    # Returns same string
+  def test_check_empty
+    # Return same string
     program = ''
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal('', program)
   end
 
-  def test_check_program_comment_removal
+  def test_check_comment_removal
     # Remove unknown characters
     program = "abc<>[]--++#,.()123_-=;\n"
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal('<>[]--++,.-', program)
   end
 
-  def test_check_program_open_bracket_exception
+  def test_check_open_bracket_exception
     # Expected to raise an exception
-    e = assert_raises(RuntimeError) {MindFreak.check_program('[-[')}
+    e = assert_raises(RuntimeError) {MindFreak.check('[-[')}
     assert_equal('Expected [', e.message)
   end
 
-  def test_check_program_close_bracket_exception
+  def test_check_close_bracket_exception
     # Expected to raise an exception
-    e = assert_raises(RuntimeError) {MindFreak.check_program('[-]]')}
+    e = assert_raises(RuntimeError) {MindFreak.check('[-]]')}
     assert_equal('Unexpected ] found', e.message)
   end
 
@@ -49,7 +49,7 @@ class Rorschach < Test::Unit::TestCase
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal(SET_ONE, program)
     MindFreak.run_interpreter(program, tape)
     assert_equal([1], tape)
@@ -60,7 +60,7 @@ class Rorschach < Test::Unit::TestCase
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal('[->+<]', program)
     MindFreak.run_interpreter(program, tape)
     assert_equal([0, 15], tape)
@@ -73,7 +73,7 @@ class Rorschach < Test::Unit::TestCase
     tape = [0, 33]
     MindFreak.input = StringIO.new('Helo','r')
     MindFreak.output = StringIO.new
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     MindFreak.run_interpreter(program, tape)
     assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
@@ -89,7 +89,7 @@ class Rorschach < Test::Unit::TestCase
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal(SET_ONE, program)
     MindFreak.run_bytecode(program, tape)
     assert_equal([1], tape)
@@ -100,7 +100,7 @@ class Rorschach < Test::Unit::TestCase
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal('[->+<]', program)
     MindFreak.run_bytecode(program, tape)
     assert_equal([0, 15], tape)
@@ -113,7 +113,7 @@ class Rorschach < Test::Unit::TestCase
     tape = [0, 33]
     MindFreak.input = StringIO.new('Helo','r')
     MindFreak.output = StringIO.new
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     MindFreak.run_bytecode(program, tape)
     assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
@@ -129,7 +129,7 @@ class Rorschach < Test::Unit::TestCase
     # Clear first cell and add one
     program = SET_ONE.dup
     tape = [10]
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal(SET_ONE, program)
     MindFreak.run_bytecode2(program, tape)
     assert_equal([1], tape)
@@ -140,7 +140,7 @@ class Rorschach < Test::Unit::TestCase
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal('[->+<]', program)
     MindFreak.run_bytecode2(program, tape)
     assert_equal([0, 15], tape)
@@ -153,7 +153,7 @@ class Rorschach < Test::Unit::TestCase
     tape = [0, 33]
     MindFreak.input = StringIO.new('Helo','r')
     MindFreak.output = StringIO.new
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     MindFreak.run_bytecode2(program, tape)
     assert_equal([111, 33], tape)
     assert_equal(0, MindFreak.pointer)
@@ -171,7 +171,7 @@ class Rorschach < Test::Unit::TestCase
     tape = [10]
     # Ruby evaluation mode requires local pointer
     pointer = 0
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal(SET_ONE, program)
     eval(MindFreak.to_ruby(program))
     assert_equal([1], tape)
@@ -184,7 +184,7 @@ class Rorschach < Test::Unit::TestCase
     tape = [5, 10]
     # Ruby evaluation mode requires local pointer
     pointer = 0
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     assert_equal('[->+<]', program)
     eval(MindFreak.to_ruby(program))
     assert_equal([0, 15], tape)
@@ -199,7 +199,7 @@ class Rorschach < Test::Unit::TestCase
     tape = [0, 33]
     # Ruby evaluation mode requires local pointer
     pointer = 0
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Connect input and output local variables
     eval(MindFreak.to_ruby(program, nil, 'input', 'output'))
     assert_equal([111, 33], tape)
@@ -214,7 +214,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_to_ruby_set_one
     program = SET_ONE.dup
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
       "tape = Hash.new(0)\npointer = 0\ntape[pointer] = 1",
@@ -229,7 +229,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_to_ruby_sum
     program = SUM.dup
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
       "tape = Hash.new(0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
@@ -244,7 +244,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_to_ruby_read_consecutive
     program = ',,,,,'
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
       "tape = Hash.new(0)\npointer = 0\n4.times {STDIN.getbyte}\ntape[pointer] = STDIN.getbyte",
@@ -263,7 +263,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_to_c_set_one
     program = SET_ONE.dup
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Default size tape
     assert_equal(
       "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
@@ -279,7 +279,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_to_c_sum
     program = SUM.dup
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Default size tape
     assert_equal(
       "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
@@ -295,7 +295,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_to_c_read_consecutive
     program = ',,,,,'
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Default size tape
     assert_equal(
       "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
@@ -315,7 +315,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_bytecode_set_one
     # Bytecode uses [instruction, argument]
-    bytecode = MindFreak.make_bytecode(SET_ONE)
+    bytecode = MindFreak.bytecode(SET_ONE)
     assert_equal(
       [
         [MindFreak::JUMP,       2],
@@ -330,15 +330,15 @@ class Rorschach < Test::Unit::TestCase
       [
         [MindFreak::INCREMENT, 1, nil, true]
       ],
-      MindFreak.optimize_bytecode(bytecode)
+      MindFreak.optimize(bytecode)
     )
   end
 
   def test_bytecode_sum
     # Bytecode uses [instruction, argument]
     program = SUM.dup
-    MindFreak.check_program(program)
-    bytecode = MindFreak.make_bytecode(program)
+    MindFreak.check(program)
+    bytecode = MindFreak.bytecode(program)
     assert_equal(
       [
         [MindFreak::JUMP,       5],
@@ -356,29 +356,29 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::MULTIPLY,  1, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
-      MindFreak.optimize_bytecode(bytecode)
+      MindFreak.optimize(bytecode)
     )
     
   end
 
   def test_bytecode_nullification
     # Add and subtract
-    bytecode = MindFreak.make_bytecode('+++---')
+    bytecode = MindFreak.bytecode('+++---')
     assert_equal([], bytecode)
     # Subtract and add
-    bytecode = MindFreak.make_bytecode('---+++')
+    bytecode = MindFreak.bytecode('---+++')
     assert_equal([], bytecode)
     # Add one
-    bytecode = MindFreak.make_bytecode('---++++')
+    bytecode = MindFreak.bytecode('---++++')
     assert_equal([[MindFreak::INCREMENT, 1]], bytecode)
     # Check if pairs are matched
-    bytecode = MindFreak.make_bytecode('+>>-<>+<<-')
+    bytecode = MindFreak.bytecode('+>>-<>+<<-')
     assert_equal([], bytecode)
   end
 
   def test_bytecode_offset
     # Bytecode uses [instruction, argument]
-    bytecode = MindFreak.make_bytecode('>+<<.>')
+    bytecode = MindFreak.bytecode('>+<<.>')
     assert_equal(
       [
         [MindFreak::FORWARD,   1],
@@ -395,13 +395,13 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::INCREMENT, 1,  1],
         [MindFreak::WRITE,     1, -1]
       ],
-      MindFreak.optimize_bytecode(bytecode)
+      MindFreak.optimize(bytecode)
     )
   end
 
   def test_bytecode_copy
     # Bytecode uses [instruction, argument]
-    bytecode = MindFreak.make_bytecode('[->>+>+<<<]')
+    bytecode = MindFreak.bytecode('[->>+>+<<<]')
     assert_equal(
       [
         [MindFreak::JUMP,       7],
@@ -422,13 +422,13 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::MULTIPLY,  3, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
-      MindFreak.optimize_bytecode(bytecode)
+      MindFreak.optimize(bytecode)
     )
   end
 
   def test_bytecode_multiply
     # Bytecode uses [instruction, argument]
-    bytecode = MindFreak.make_bytecode('[->>+++++>++<<<]')
+    bytecode = MindFreak.bytecode('[->>+++++>++<<<]')
     assert_equal(
       [
         [MindFreak::JUMP,       7],
@@ -449,13 +449,13 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::MULTIPLY,  3, nil, 2],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
-      MindFreak.optimize_bytecode(bytecode)
+      MindFreak.optimize(bytecode)
     )
   end
 
   def test_bytecode_multiply_with_offset
     # Bytecode uses [instruction, argument]
-    bytecode = MindFreak.make_bytecode('>>[->>+++++>++<<<]')
+    bytecode = MindFreak.bytecode('>>[->>+++++>++<<<]')
     assert_equal(
       [
         [MindFreak::FORWARD,    2],
@@ -477,7 +477,7 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::MULTIPLY,  3, 2, 2],
         [MindFreak::INCREMENT, 0, 2, true]
       ],
-      MindFreak.optimize_bytecode(bytecode)
+      MindFreak.optimize(bytecode)
     )
   end
 
@@ -486,7 +486,7 @@ class Rorschach < Test::Unit::TestCase
     ++++++++[<++++>-]<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++
     .------.--------.>>+.'
     # Remove spaces and newlines
-    assert_nil(MindFreak.check_program(program))
+    assert_nil(MindFreak.check(program))
     # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
     assert_equal(
       [
@@ -522,7 +522,7 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::INCREMENT, 1, 2],
         [MindFreak::WRITE, 1, 2]
       ],
-      MindFreak.optimize_bytecode(MindFreak.make_bytecode(program))
+      MindFreak.optimize(MindFreak.bytecode(program))
     )
     # Using StringIO to simulate output
     MindFreak.output = StringIO.new
@@ -536,10 +536,10 @@ class Rorschach < Test::Unit::TestCase
     file_exe = "#{filename}.exe"
     # Check bytecode size
     program = IO.read(filename)
-    assert_nil(MindFreak.check_program(program))
-    bytecode = MindFreak.make_bytecode(program)
+    assert_nil(MindFreak.check(program))
+    bytecode = MindFreak.bytecode(program)
     assert_equal(4115, bytecode.size)
-    assert_equal(2248, MindFreak.optimize_bytecode(bytecode).size)
+    assert_equal(2248, MindFreak.optimize(bytecode).size)
     # Compare output
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)

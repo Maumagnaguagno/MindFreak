@@ -30,11 +30,11 @@ module MindFreak
   @output = STDOUT
 
   #-----------------------------------------------
-  # Check program
+  # Check
   #-----------------------------------------------
 
-  def check_program(program)
-    # Remove comments and check balanced brackets
+  def check(program)
+    # Remove comments and verify balanced brackets
     control = 0
     program.delete!('^-+><.,[]')
     program.each_byte {|c|
@@ -99,7 +99,7 @@ module MindFreak
 
   def run_bytecode(program, tape)
     # Bytecode interpreter does not support optimizations
-    bytecode = make_bytecode(program)
+    bytecode = bytecode(program)
     program_size = bytecode.size
     program_counter = -1
     @pointer = 0
@@ -131,7 +131,7 @@ module MindFreak
 
   def run_bytecode2(program, tape)
     # Bytecode2 interpreter support optimizations
-    bytecode = optimize_bytecode(make_bytecode(program))
+    bytecode = optimize(bytecode(program))
     program_size = bytecode.size
     program_counter = -1
     @pointer = 0
@@ -173,7 +173,7 @@ module MindFreak
     code = tape ? tape.empty? ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape.size},0)\npointer = 0" : ''
     indent = ''
     # Match bytecode
-    optimize_bytecode(make_bytecode(program)).each {|c,arg,offset,set_multiplier|
+    optimize(bytecode(program)).each {|c,arg,offset,set_multiplier|
       case c
       when INCREMENT # Tape
         code << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless set_multiplier}= #{arg}"
@@ -212,7 +212,7 @@ module MindFreak
     code = "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0};\n  #{type} *pointer = tape;"
     indent = '  '
     # Match bytecode
-    optimize_bytecode(make_bytecode(program)).each {|c,arg,offset,set_multiplier|
+    optimize(bytecode(program)).each {|c,arg,offset,set_multiplier|
       case c
       when INCREMENT # Tape
         code << "\n#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless set_multiplier}= #{arg};"
@@ -239,10 +239,10 @@ module MindFreak
   end
 
   #-----------------------------------------------
-  # Make bytecode
+  # Bytecode
   #-----------------------------------------------
 
-  def make_bytecode(program)
+  def bytecode(program)
     bytecode = []
     jump_stack = []
     last = index = 0
@@ -288,10 +288,10 @@ module MindFreak
   end
 
   #-----------------------------------------------
-  # Optimize bytecode
+  # Optimize
   #-----------------------------------------------
 
-  def optimize_bytecode(bytecode)
+  def optimize(bytecode)
     # Clear [-] [+] or set [-]+ [+]-
     clear = [INCREMENT, 0, nil, true]
     i = -1
@@ -400,7 +400,7 @@ if $0 == __FILE__
       tape = bounds > 0 ? Array.new(bounds, 0) : Hash.new(0)
       # Setup
       program = IO.read(filename)
-      MindFreak.check_program(program)
+      MindFreak.check(program)
       MindFreak.debug = true
       # Keep source and executables
       keep = true
