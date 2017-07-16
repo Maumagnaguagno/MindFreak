@@ -108,7 +108,7 @@ It is described by the tuple ``[instruction, argument, offset, set or multiplier
 - **offset** is added to the current pointer;
 - **set** can be used to set a cell to a value when used by ``+`` or multiplied by a factor when used by ``*``.
 
-The [test file](tests/rorschach.rb) contains several examples about the bytecode and can be used as a guide.
+The [tests](tests/rorschach.rb) include several examples and can be used as a guide.
 
 ## Changelog
 - Oct 2013
