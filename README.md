@@ -23,6 +23,7 @@ You only have access to this set of instructions:
 ## Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
 The lack of common operators makes even simple things, like setting a variable to a zero, a loop:
+
 ```
 Original:  [-]
 Converted: while(tape[pointer] != 0) tape[pointer] -= 1;
@@ -30,6 +31,7 @@ Optimized: tape[pointer] = 0;
 ```
 
 Setting a variable requires the cell to be cleared and updated:
+
 ```
 Original:  [-]++
 Converted: while(tape[pointer] != 0) tape[pointer] -= 1; tape[pointer] += 2;
@@ -37,6 +39,7 @@ Optimized: tape[pointer] = 2;
 ```
 
 Pointer movement can be a pain, checking a cell nearby and returning to its initial state costs cycles. We want those cycles back:
+
 ```
 Original:  >+<
 Converted: pointer += 1; tape[pointer] += 1; pointer -= 1;
