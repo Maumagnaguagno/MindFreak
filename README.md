@@ -5,7 +5,7 @@ Started this project during October 2013 to see something easy to parse for a ch
 The goal was to understand how much could be optimized from the source.
 Ended up discovering a lot of crazy ideas about bytecode and macro optimizations.
 Really fun to do in a weekend, but do not let the funny name fool you, would take a lifetime to master.
-Most of my work was inspired by [Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) and the awesome implementation of a [Mandelbrot fractal generator](mandelbrot.bf) by Erik Bosman.
+Most of my work was inspired by [Nayuki] and the awesome implementation of a [Mandelbrot fractal generator](mandelbrot.bf) by Erik Bosman.
 
 ## What is BrainFuck?
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
@@ -50,7 +50,7 @@ But there is [much more to be optimized](http://calmerthanyouare.org/2015/01/07/
 The solution is to apply optimizations following a certain order.
 This project contracts several operations at the first level of bytecode generation and them apply the hard optimizations, generating a more complex bytecode.
 
-[Nayuki](http://www.nayuki.io/page/optimizing-brainfuck-compiler) has even more optimizations!
+[Nayuki] has even more optimizations!
 Which is awesome and sad at the same time, maybe I will never have time to implement them all.
 Since I can output C code we can expect GCC to solve this problem for us.
 
@@ -152,3 +152,5 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 - Generate C code with non-blank initial tape
 - Step-by-step/interactive mode, breakpoint
 - Add examples
+
+[Nayuki]: https://www.nayuki.io/page/optimizing-brainfuck-compiler
