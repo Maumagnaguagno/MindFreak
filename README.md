@@ -11,8 +11,8 @@ Most of my work was inspired by [Nayuki] and the awesome implementation of a [Ma
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
 The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape.
 You only have access to this set of instructions:
-- <kbd>></kbd> move pointer to the right ``pointer += 1``
-- <kbd><</kbd> move pointer to the left ``pointer -= 1``
+- <kbd>></kbd> move pointer forward ``pointer += 1``
+- <kbd><</kbd> move pointer backward ``pointer -= 1``
 - <kbd>+</kbd> increment value of cell ``tape[pointer] += 1``
 - <kbd>-</kbd> decrement value of cell ``tape[pointer] -= 1``
 - <kbd>.</kbd> output the value of cell, usually this byte is mapped to a character ``output(tape[pointer])``
