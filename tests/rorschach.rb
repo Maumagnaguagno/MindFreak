@@ -358,7 +358,6 @@ class Rorschach < Test::Unit::TestCase
       ],
       MindFreak.optimize(bytecode)
     )
-    
   end
 
   def test_bytecode_nullification
