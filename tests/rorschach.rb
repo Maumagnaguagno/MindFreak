@@ -370,7 +370,7 @@ class Rorschach < Test::Unit::TestCase
     # Add one
     bytecode = MindFreak.bytecode('---++++')
     assert_equal([[MindFreak::INCREMENT, 1]], bytecode)
-    # Check if pairs are matched
+    # Check if pairs match
     bytecode = MindFreak.bytecode('+>>-<>+<<-')
     assert_equal([], bytecode)
   end
@@ -393,6 +393,39 @@ class Rorschach < Test::Unit::TestCase
       [
         [MindFreak::INCREMENT, 1,  1],
         [MindFreak::WRITE,     1, -1]
+      ],
+      MindFreak.optimize(bytecode)
+    )
+  end
+
+  def test_bytecode_offset_with_jump
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.bytecode('[>+<<.>[.]]')
+    assert_equal(
+      [
+        [MindFreak::JUMP,      9],
+        [MindFreak::FORWARD,   1],
+        [MindFreak::INCREMENT, 1],
+        [MindFreak::FORWARD,  -2],
+        [MindFreak::WRITE,     1],
+        [MindFreak::FORWARD,   1],
+        [MindFreak::JUMP,      8],
+        [MindFreak::WRITE,     1],
+        [MindFreak::JUMPBACK,  6],
+        [MindFreak::JUMPBACK,  0]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    assert_equal(
+      [
+        [MindFreak::JUMP,      6],
+        [MindFreak::INCREMENT, 1,  1],
+        [MindFreak::WRITE,     1, -1],
+        [MindFreak::JUMP,      5],
+        [MindFreak::WRITE,     1],
+        [MindFreak::JUMPBACK,  3],
+        [MindFreak::JUMPBACK,  0],
       ],
       MindFreak.optimize(bytecode)
     )

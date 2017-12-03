@@ -365,17 +365,11 @@ module MindFreak
           end
         end
       # Rebuild jump index argument, only works for bytecode
-      when JUMP
-        jump_stack << i
-      when JUMPBACK
-        bytecode[i][1] = jump_stack.last
-        bytecode[jump_stack.pop][1] = i
+      when JUMP then jump_stack << i
+      when JUMPBACK then bytecode[bytecode[i][1] = jump_stack.pop][1] = i
       end
     end
-    unless jump_stack.empty?
-      bytecode[i][1] = jump_stack.last
-      bytecode[jump_stack.pop][1] = i
-    end
+    bytecode[bytecode[i][1] = jump_stack.pop][1] = i unless jump_stack.empty?
     # Remove last forwards
     bytecode.pop while bytecode.last.first == FORWARD
     puts "Bytecode optimized to size: #{bytecode.size}" if @debug
