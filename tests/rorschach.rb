@@ -6,6 +6,7 @@ class Rorschach < Test::Unit::TestCase
 
   SET_ONE = '[-]+'
   SUM = '[->+<] Subtract one from first cell; add to the second; repeat until first cell is zero'
+  HELO = ',.,.,..,.>.'
 
   def test_attributes
     [:pointer, :input, :input=, :output, :output=, :debug, :debug=].each {|att| assert_respond_to(MindFreak, att)}
@@ -69,7 +70,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_run_interpreter_io
     # Using StringIO to simulate output
-    program = ',.,.,..,.>.'
+    program = HELO.dup
     tape = [0, 33]
     MindFreak.input = StringIO.new('Helo','r')
     MindFreak.output = StringIO.new
@@ -109,7 +110,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_run_bytecode_io
     # Using StringIO to simulate output
-    program = ',.,.,..,.>.'
+    program = HELO.dup
     tape = [0, 33]
     MindFreak.input = StringIO.new('Helo','r')
     MindFreak.output = StringIO.new
@@ -149,7 +150,7 @@ class Rorschach < Test::Unit::TestCase
 
   def test_run_bytecode2_io
     # Using StringIO to simulate output
-    program = ',.,.,..,.>.'
+    program = HELO.dup
     tape = [0, 33]
     MindFreak.input = StringIO.new('Helo','r')
     MindFreak.output = StringIO.new
@@ -195,7 +196,7 @@ class Rorschach < Test::Unit::TestCase
     # Using StringIO to simulate output
     input = StringIO.new('Helo','r')
     output = StringIO.new
-    program = ',.,.,..,.>.'
+    program = HELO.dup
     tape = [0, 33]
     # Ruby evaluation mode requires local pointer
     pointer = 0
