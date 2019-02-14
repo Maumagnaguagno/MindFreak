@@ -1,5 +1,4 @@
 require 'test/unit'
-require 'stringio'
 require './MindFreak'
 
 class Rorschach < Test::Unit::TestCase
