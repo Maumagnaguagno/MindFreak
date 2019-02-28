@@ -5,7 +5,7 @@ class Rorschach < Test::Unit::TestCase
 
   SET_ONE = '[-]+'
   SUM = '[->+<] Subtract one from first cell; add to the second; repeat until first cell is zero'
-  HELO = ',.,.,..,.>.'
+  HELLO = ',,,.,.,..,.>.'
 
   def test_attributes
     [:pointer, :input, :input=, :output, :output=, :debug, :debug=].each {|att| assert_respond_to(MindFreak, att)}
@@ -69,15 +69,15 @@ class Rorschach < Test::Unit::TestCase
 
   def test_run_interpreter_io
     # Using StringIO to simulate output
-    program = HELO.dup
+    program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('Helo','r')
+    MindFreak.input = StringIO.new('  Helo','r')
     MindFreak.output = StringIO.new
     assert_nil(MindFreak.check(program))
     MindFreak.run_interpreter(program, tape)
     assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
-    assert_equal('Helo', MindFreak.input.string)
+    assert_equal('  Helo', MindFreak.input.string)
     assert_equal('Hello!', MindFreak.output.string)
   end
 
@@ -109,15 +109,15 @@ class Rorschach < Test::Unit::TestCase
 
   def test_run_bytecode_io
     # Using StringIO to simulate output
-    program = HELO.dup
+    program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('Helo','r')
+    MindFreak.input = StringIO.new('  Helo','r')
     MindFreak.output = StringIO.new
     assert_nil(MindFreak.check(program))
     MindFreak.run_bytecode(program, tape)
     assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
-    assert_equal('Helo', MindFreak.input.string)
+    assert_equal('  Helo', MindFreak.input.string)
     assert_equal('Hello!', MindFreak.output.string)
   end
 
@@ -149,15 +149,15 @@ class Rorschach < Test::Unit::TestCase
 
   def test_run_bytecode2_io
     # Using StringIO to simulate output
-    program = HELO.dup
+    program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('Helo','r')
+    MindFreak.input = StringIO.new('  Helo','r')
     MindFreak.output = StringIO.new
     assert_nil(MindFreak.check(program))
     MindFreak.run_bytecode2(program, tape)
     assert_equal([111, 33], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('Helo', MindFreak.input.string)
+    assert_equal('  Helo', MindFreak.input.string)
     assert_equal('Hello!', MindFreak.output.string)
   end
 
@@ -193,9 +193,9 @@ class Rorschach < Test::Unit::TestCase
 
   def test_eval_ruby_io
     # Using StringIO to simulate output
-    input = StringIO.new('Helo','r')
+    input = StringIO.new('  Helo','r')
     output = StringIO.new
-    program = HELO.dup
+    program = HELLO.dup
     tape = [0, 33]
     # Ruby evaluation mode requires local pointer
     pointer = 0
@@ -204,7 +204,7 @@ class Rorschach < Test::Unit::TestCase
     eval(MindFreak.to_ruby(program, nil, 'input', 'output'))
     assert_equal([111, 33], tape)
     assert_equal(0, pointer)
-    assert_equal('Helo', input.string)
+    assert_equal('  Helo', input.string)
     assert_equal('Hello!', output.string)
   end
 
@@ -247,12 +247,12 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\n4.times {STDIN.getbyte}\ntape[pointer] = STDIN.getbyte",
+      "tape = Hash.new(0)\npointer = 0\nSTDIN.gets(4)\ntape[pointer] = STDIN.getbyte",
       MindFreak.to_ruby(program, [])
     )
     # Array tape
     assert_equal(
-      "tape = Array.new(1,0)\npointer = 0\n4.times {STDIN.getbyte}\ntape[pointer] = STDIN.getbyte",
+      "tape = Array.new(1,0)\npointer = 0\nSTDIN.gets(4)\ntape[pointer] = STDIN.getbyte",
       MindFreak.to_ruby(program, [0])
     )
   end
