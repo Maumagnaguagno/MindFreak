@@ -87,8 +87,7 @@ class Rorschach < Test::Unit::TestCase
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
     # Expected to raise an exception
-    e = assert_raises(EOFError) {MindFreak.run_interpreter(program, tape)}
-    assert_equal('end of file reached', e.message)
+    assert_raises(EOFError) {MindFreak.run_interpreter(program, tape)}
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
@@ -140,8 +139,7 @@ class Rorschach < Test::Unit::TestCase
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
     # Expected to raise an exception
-    e = assert_raises(EOFError) {MindFreak.run_bytecode(program, tape)}
-    assert_equal('end of file reached', e.message)
+    assert_raises(EOFError) {MindFreak.run_bytecode(program, tape)}
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
@@ -193,8 +191,7 @@ class Rorschach < Test::Unit::TestCase
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
     # Expected to raise an exception
-    e = assert_raises(EOFError) {MindFreak.run_bytecode2(program, tape)}
-    assert_equal('end of file reached', e.message)
+    assert_raises(EOFError) {MindFreak.run_bytecode2(program, tape)}
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
