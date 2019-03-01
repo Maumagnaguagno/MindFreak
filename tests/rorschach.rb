@@ -68,10 +68,10 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_run_interpreter_io
-    # Using StringIO to simulate output
+    # Using StringIO to simulate input/output
     program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('  Helo','r')
+    MindFreak.input = StringIO.new('  Helo')
     MindFreak.output = StringIO.new
     assert_nil(MindFreak.check(program))
     MindFreak.run_interpreter(program, tape)
@@ -79,6 +79,19 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(1, MindFreak.pointer)
     assert_equal('  Helo', MindFreak.input.string)
     assert_equal('Hello!', MindFreak.output.string)
+  end
+
+  def test_run_interpreter_io_read_eof
+    program = ','
+    tape = [0]
+    MindFreak.input = StringIO.new
+    assert_nil(MindFreak.check(program))
+    # Expected to raise an exception
+    e = assert_raises(EOFError) {MindFreak.run_interpreter(program, tape)}
+    assert_equal('end of file reached', e.message)
+    assert_equal([0], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
   end
 
   #-----------------------------------------------
@@ -108,10 +121,10 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_run_bytecode_io
-    # Using StringIO to simulate output
+    # Using StringIO to simulate input/output
     program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('  Helo','r')
+    MindFreak.input = StringIO.new('  Helo')
     MindFreak.output = StringIO.new
     assert_nil(MindFreak.check(program))
     MindFreak.run_bytecode(program, tape)
@@ -119,6 +132,19 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(1, MindFreak.pointer)
     assert_equal('  Helo', MindFreak.input.string)
     assert_equal('Hello!', MindFreak.output.string)
+  end
+
+  def test_run_bytecode_io_read_eof
+    program = ','
+    tape = [0]
+    MindFreak.input = StringIO.new
+    assert_nil(MindFreak.check(program))
+    # Expected to raise an exception
+    e = assert_raises(EOFError) {MindFreak.run_bytecode(program, tape)}
+    assert_equal('end of file reached', e.message)
+    assert_equal([0], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
   end
 
   #-----------------------------------------------
@@ -148,10 +174,10 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_run_bytecode2_io
-    # Using StringIO to simulate output
+    # Using StringIO to simulate input/output
     program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('  Helo','r')
+    MindFreak.input = StringIO.new('  Helo')
     MindFreak.output = StringIO.new
     assert_nil(MindFreak.check(program))
     MindFreak.run_bytecode2(program, tape)
@@ -159,6 +185,19 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(0, MindFreak.pointer)
     assert_equal('  Helo', MindFreak.input.string)
     assert_equal('Hello!', MindFreak.output.string)
+  end
+
+  def test_run_bytecode2_io_read_eof
+    program = ','
+    tape = [0]
+    MindFreak.input = StringIO.new
+    assert_nil(MindFreak.check(program))
+    # Expected to raise an exception
+    e = assert_raises(EOFError) {MindFreak.run_bytecode2(program, tape)}
+    assert_equal('end of file reached', e.message)
+    assert_equal([0], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
   end
 
   #-----------------------------------------------
@@ -192,8 +231,8 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_eval_ruby_io
-    # Using StringIO to simulate output
-    input = StringIO.new('  Helo','r')
+    # Using StringIO to simulate input/output
+    input = StringIO.new('  Helo')
     output = StringIO.new
     program = HELLO.dup
     tape = [0, 33]
@@ -247,12 +286,12 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nSTDIN.gets(4)\ntape[pointer] = STDIN.getbyte",
+      "tape = Hash.new(0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.readbyte",
       MindFreak.to_ruby(program, [])
     )
     # Array tape
     assert_equal(
-      "tape = Array.new(1,0)\npointer = 0\nSTDIN.gets(4)\ntape[pointer] = STDIN.getbyte",
+      "tape = Array.new(1,0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.readbyte",
       MindFreak.to_ruby(program, [0])
     )
   end
