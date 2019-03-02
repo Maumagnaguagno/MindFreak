@@ -87,7 +87,7 @@ class Rorschach < Test::Unit::TestCase
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
     # Expected to raise an exception
-    assert_raises(EOFError) {MindFreak.run_interpreter(program, tape)}
+    MindFreak.run_interpreter(program, tape)
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
@@ -139,7 +139,7 @@ class Rorschach < Test::Unit::TestCase
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
     # Expected to raise an exception
-    assert_raises(EOFError) {MindFreak.run_bytecode(program, tape)}
+    MindFreak.run_bytecode(program, tape)
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
@@ -191,7 +191,7 @@ class Rorschach < Test::Unit::TestCase
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
     # Expected to raise an exception
-    assert_raises(EOFError) {MindFreak.run_bytecode2(program, tape)}
+    MindFreak.run_bytecode2(program, tape)
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
@@ -283,12 +283,12 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.readbyte",
+      "tape = Hash.new(0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.getbyte.to_i",
       MindFreak.to_ruby(program, [])
     )
     # Array tape
     assert_equal(
-      "tape = Array.new(1,0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.readbyte",
+      "tape = Array.new(1,0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.getbyte.to_i",
       MindFreak.to_ruby(program, [0])
     )
   end
