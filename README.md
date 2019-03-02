@@ -13,12 +13,12 @@ The idea is that you are in control of a Turing machine without abstractions, li
 You only have access to this set of instructions:
 - <kbd>></kbd> move pointer forward ``pointer += 1``
 - <kbd><</kbd> move pointer backward ``pointer -= 1``
-- <kbd>+</kbd> increment value of cell ``tape[pointer] += 1``
-- <kbd>-</kbd> decrement value of cell ``tape[pointer] -= 1``
-- <kbd>.</kbd> output the value of cell, usually this byte is mapped to a character ``output(tape[pointer])``
-- <kbd>,</kbd> input the value of cell, usually a char is converted to a byte ``tape[pointer] = input``
-- <kbd>[</kbd> if the cell at the pointer is zero, jumps the block ``while tape[pointer] != 0``
-- <kbd>]</kbd> if the cell at the pointer is nonzero, then jump back to the beginning of block ``end of while``
+- <kbd>+</kbd> increment cell value ``tape[pointer] += 1``
+- <kbd>-</kbd> decrement cell value ``tape[pointer] -= 1``
+- <kbd>.</kbd> output cell value as character ``output(tape[pointer])``
+- <kbd>,</kbd> input cell value as character byte ``tape[pointer] = input``
+- <kbd>[</kbd> if cell value zero, jump over block ``while tape[pointer] != 0``
+- <kbd>]</kbd> if cell value is nonzero, jump to block beginning ``end of while``
 
 ## Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
