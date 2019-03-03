@@ -148,6 +148,8 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   -  Record only last byte from consecutive reads
 - Jul 2016
   - Use default tape size if no tape is provided
+- Mar 2019
+  - Optimize read/write instructions
 
 ## ToDo's
 - Generate C code with non-blank initial tape

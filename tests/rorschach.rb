@@ -577,6 +577,14 @@ class Rorschach < Test::Unit::TestCase
     )
   end
 
+  def test_bytecode_pointer_movement
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.bytecode('>><<')
+    assert_equal([], bytecode)
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    assert_equal([], MindFreak.optimize(bytecode))
+  end
+
   def test_bytecode_hello_world
     program = '>+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.>>>
     ++++++++[<++++>-]<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++
