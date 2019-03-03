@@ -297,7 +297,7 @@ class Rorschach < Test::Unit::TestCase
   # to C
   #-----------------------------------------------
 
-  def c_header(tape_size = nil)
+  def c_header(tape_size)
     "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0};\n  unsigned int *pointer = tape;\n  "
   end
 
@@ -425,18 +425,22 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_bytecode_nullification
+    # Empty
+    assert_equal([], MindFreak.bytecode(''))
     # Add and subtract
-    bytecode = MindFreak.bytecode('+++---')
-    assert_equal([], bytecode)
+    assert_equal([], MindFreak.bytecode('+++---'))
     # Subtract and add
-    bytecode = MindFreak.bytecode('---+++')
-    assert_equal([], bytecode)
+    assert_equal([], MindFreak.bytecode('---+++'))
     # Add one
-    bytecode = MindFreak.bytecode('---++++')
-    assert_equal([[MindFreak::INCREMENT, 1]], bytecode)
+    assert_equal([[MindFreak::INCREMENT, 1]], MindFreak.bytecode('---++++'))
     # Check if pairs match
-    bytecode = MindFreak.bytecode('+>>-<>+<<-')
-    assert_equal([], bytecode)
+    assert_equal([], MindFreak.bytecode('+>>-<>+<<-'))
+    # Forward and backward
+    assert_equal([], MindFreak.bytecode('>><<'))
+    # Backward and forward
+    assert_equal([], MindFreak.bytecode('<<>>'))
+    # Empty bytecode is optimal
+    assert_equal([], MindFreak.optimize([]))
   end
 
   def test_bytecode_offset
@@ -575,14 +579,6 @@ class Rorschach < Test::Unit::TestCase
       ],
       MindFreak.optimize(bytecode)
     )
-  end
-
-  def test_bytecode_redundant_pointer_movement
-    # Bytecode uses [instruction, argument]
-    bytecode = MindFreak.bytecode('>><<')
-    assert_equal([], bytecode)
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
-    assert_equal([], MindFreak.optimize(bytecode))
   end
 
   def test_bytecode_redundant_set_value
