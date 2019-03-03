@@ -577,12 +577,42 @@ class Rorschach < Test::Unit::TestCase
     )
   end
 
-  def test_bytecode_pointer_movement
+  def test_bytecode_redundant_pointer_movement
     # Bytecode uses [instruction, argument]
     bytecode = MindFreak.bytecode('>><<')
     assert_equal([], bytecode)
     # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
     assert_equal([], MindFreak.optimize(bytecode))
+  end
+
+  def test_bytecode_redundant_set_value
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.bytecode('++[-]+++[-]++[-]+')
+    assert_equal(
+      [
+        [MindFreak::INCREMENT,  2],
+        [MindFreak::JUMP,       3],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::JUMPBACK,   1],
+        [MindFreak::INCREMENT,  3],
+        [MindFreak::JUMP,       7],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::JUMPBACK,   5],
+        [MindFreak::INCREMENT,  2],
+        [MindFreak::JUMP,      11],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::JUMPBACK,   9],
+        [MindFreak::INCREMENT,  1]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    assert_equal(
+      [
+        [MindFreak::INCREMENT, 1, nil, true]
+      ],
+      MindFreak.optimize(bytecode)
+    )
   end
 
   def test_bytecode_hello_world
@@ -643,7 +673,7 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     bytecode = MindFreak.bytecode(program)
     assert_equal(4115, bytecode.size)
-    assert_equal(2248, MindFreak.optimize(bytecode).size)
+    assert_equal(2246, MindFreak.optimize(bytecode).size)
     # Compare output
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)

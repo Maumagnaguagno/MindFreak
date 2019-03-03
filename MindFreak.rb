@@ -311,6 +311,8 @@ module MindFreak
           bytecode[i] = clear
           bytecode.slice!(i.succ,2)
         end
+        # Previous increment operation is redundant
+        bytecode.delete_at(i -= 1) if i != 0 and bytecode[i.pred].first == INCREMENT
       end
     end
     # Multiplication [->+<]
