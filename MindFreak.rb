@@ -203,13 +203,14 @@ module MindFreak
   # to C
   #-----------------------------------------------
 
-  def to_c(program, tape = nil, type = 'unsigned int')
+  def to_c(program, tape = nil, eof = 0, type = 'unsigned int')
     if not tape or (tape_size = tape.size).zero?
       tape_size = TAPE_DEFAULT_SIZE
       puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
     end
     # Header
     code = "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0};\n  #{type} *pointer = tape;"
+    code << "\n  int c;" if eof != -1
     indent = '  '
     # Match bytecode
     optimize(bytecode(program)).each {|c,arg,offset,set_multiplier|
@@ -223,7 +224,11 @@ module MindFreak
         code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
       when READ # Read
         code << "\n#{indent}for(unsigned int i = #{arg.pred}; i; --i) getchar();" if arg > 1
-        code << "\n#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
+        if eof == -1
+          code << "\n#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
+        else
+          code << "\n#{indent}c = getchar();\n#{indent}(*(pointer#{"+#{offset}" if offset})) = c == EOF ? #{eof} : c;"
+        end
       when JUMP # Jump if zero
         code << "\n#{indent}while(*pointer){"
         indent << '  '

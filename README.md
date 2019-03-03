@@ -17,7 +17,7 @@ You only have access to this set of instructions:
 - <kbd>-</kbd> decrement cell value ``tape[pointer] -= 1``
 - <kbd>.</kbd> output cell value as character ``output(tape[pointer])``
 - <kbd>,</kbd> input cell value as character byte ``tape[pointer] = input``
-- <kbd>[</kbd> if cell value zero, jump over block ``while tape[pointer] != 0``
+- <kbd>[</kbd> if cell value is zero, jump over block ``while tape[pointer] != 0``
 - <kbd>]</kbd> if cell value is nonzero, jump to block beginning ``end of while``
 
 ## Examples
@@ -64,13 +64,14 @@ In bold what is supported by this project:
 - Unknown instructions (**ignore**, halt, extended instructions)
 
 ### Support
-- Bounded (fast Array) ou unbounded tape (slow Hash)
+- Bounded (fast Array) ou unbounded (slow Hash) tape
 - Ignore comments and check brackets before execution
 - Interpreter mode, apply instructions as user provided
 - Bytecode mode (cluster repeated instructions to achieve speed-up)
 - Bytecode2 mode (uses optimized bytecode to achieve even more speed-up)
-- Ruby Mode (transform optimized bytecode to ruby and eval to get even more speed)
-- The C mode works like the Ruby one, but cells are limited to fixed size and bounded tape
+- Ruby mode (transform optimized bytecode to ruby and eval to get even more speed)
+- C mode works like Ruby mode with fixed size tape and cells
+- C mode can deal with input EOF as ``0`` (default, as other modes) or ``-1`` (as in C, faster)
 - Output tape when interrupted (except C mode)
 
 ## Execution
@@ -98,7 +99,7 @@ The bytecode generated is an Array of Arrays and differ from the basic to the op
 - ``run_bytecode(program, tape)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
 - ``run_bytecode2(program, tape)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
 - ``to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')`` returns a string with a Ruby equivalent to the program provided. If no tape is provided the string will not contain a tape and pointer declaration, this forces ``eval`` to use external variables.
-- ``to_c(program, tape = nil, type = 'unsigned int')`` returns a string with a C equivalent to the program provided. The type contains the cell type being used. If no tape is provided the default tape size is used.
+- ``to_c(program, tape = nil, eof = 0, type = 'unsigned int')`` returns a string with a C equivalent to the program provided. The type contains the cell type being used. If no tape is provided the default tape size is used.
 - ``bytecode(program)`` returns an Array with the bytecodes.
 - ``optimize(bytecode)`` returns an Array with the optimized bytecodes.
 
@@ -150,6 +151,7 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 
 ## ToDo's
 - Generate C code with non-blank initial tape
+- C mode non-modifiable EOF
 - Step-by-step/interactive mode, breakpoint
 - Add examples
 

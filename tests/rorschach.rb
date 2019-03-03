@@ -297,34 +297,54 @@ class Rorschach < Test::Unit::TestCase
   # to C
   #-----------------------------------------------
 
+  def c_header(tape_size = nil)
+    "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0};\n  unsigned int *pointer = tape;\n  "
+  end
+
   def test_to_c_set_one
     program = SET_ONE.dup
     assert_nil(MindFreak.check(program))
-    # Default size tape
+    # Default tape size
     assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
+      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}*(pointer) = 1;\n  return 0;\n}",
+      MindFreak.to_c(program, [], -1)
+    )
+    assert_equal(
+      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}int c;\n  *(pointer) = 1;\n  return 0;\n}",
       MindFreak.to_c(program, [])
     )
-    # User size tape
+    # User tape size
     tape = [0,0]
     assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer) = 1;\n  return 0;\n}",
+      "#{c_header(2)}int c;\n  *(pointer) = 1;\n  return 0;\n}",
       MindFreak.to_c(program, tape)
+    )
+    assert_equal(
+      "#{c_header(2)}*(pointer) = 1;\n  return 0;\n}",
+      MindFreak.to_c(program, tape, -1)
     )
   end
 
   def test_to_c_sum
     program = SUM.dup
     assert_nil(MindFreak.check(program))
-    # Default size tape
+    # Default tape size
     assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}*(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      MindFreak.to_c(program, [], -1)
+    )
+    assert_equal(
+      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}int c;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
       MindFreak.to_c(program, [])
     )
-    # User size tape
+    # User tape size
     tape = [0,0]
     assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      "#{c_header(2)}*(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
+      MindFreak.to_c(program, tape, -1)
+    )
+    assert_equal(
+      "#{c_header(2)}int c;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
       MindFreak.to_c(program, tape)
     )
   end
@@ -332,15 +352,23 @@ class Rorschach < Test::Unit::TestCase
   def test_to_c_read_consecutive
     program = ',,,,,'
     assert_nil(MindFreak.check(program))
-    # Default size tape
+    # Default tape size
     assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{MindFreak::TAPE_DEFAULT_SIZE}] = {0};\n  unsigned int *pointer = tape;\n  for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
+      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
+      MindFreak.to_c(program, [], -1)
+    )
+    assert_equal(
+      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  (*(pointer)) = c == EOF ? 0 : c;\n  return 0;\n}",
       MindFreak.to_c(program, [])
     )
-    # User size tape
+    # User tape size
     tape = [0,0]
     assert_equal(
-      "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape.size}] = {0};\n  unsigned int *pointer = tape;\n  for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
+      "#{c_header(2)}for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
+      MindFreak.to_c(program, tape, -1)
+    )
+    assert_equal(
+      "#{c_header(2)}int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  (*(pointer)) = c == EOF ? 0 : c;\n  return 0;\n}",
       MindFreak.to_c(program, tape)
     )
   end
@@ -611,7 +639,7 @@ class Rorschach < Test::Unit::TestCase
     # Compare output
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)
-    IO.write(file_c, MindFreak.to_c(program))
+    IO.write(file_c, MindFreak.to_c(program, nil, -1))
     system("gcc #{file_c} -o #{file_exe} -O2")
     assert_equal(
 'AAAAAAAAAAAAAAAABBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCDDDDDDDDDEGFFEEEEDDDDDDCCCCCCCCCBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
