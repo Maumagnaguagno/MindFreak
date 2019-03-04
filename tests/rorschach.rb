@@ -298,7 +298,7 @@ class Rorschach < Test::Unit::TestCase
   #-----------------------------------------------
 
   def c_header(tape_size)
-    "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0};\n  unsigned int *pointer = tape;\n  "
+    "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0}, *pointer = tape;\n  "
   end
 
   def test_to_c_set_one
@@ -674,7 +674,7 @@ class Rorschach < Test::Unit::TestCase
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)
     IO.write(file_c, MindFreak.to_c(program, nil, -1))
-    system("gcc #{file_c} -o #{file_exe} -O2")
+    system("gcc #{file_c} -o #{file_exe} -O2 -s")
     assert_equal(
 'AAAAAAAAAAAAAAAABBBBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCDDDDDDDDDEGFFEEEEDDDDDDCCCCCCCCCBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 AAAAAAAAAAAAAAABBBBBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCDDDDDDDDDDEEEFGIIGFFEEEDDDDDDDDCCCCCCCCCBBBBBBBBBBBBBBBBBBBBBBBBBB

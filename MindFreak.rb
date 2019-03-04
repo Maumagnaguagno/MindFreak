@@ -209,7 +209,7 @@ module MindFreak
       puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
     end
     # Header
-    code = "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0};\n  #{type} *pointer = tape;"
+    code = "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0}, *pointer = tape;"
     code << "\n  int c;" if eof != -1
     indent = '  '
     # Match bytecode
@@ -436,7 +436,7 @@ if $0 == __FILE__
         file_exe = "#{filename}.exe"
         t = Time.now.to_f
         IO.write(file_c, MindFreak.to_c(program, tape))
-        if system("gcc #{file_c} -o #{file_exe} -O2")
+        if system("gcc #{file_c} -o #{file_exe} -O2 -s")
           puts "Compilation time: #{Time.now.to_f - t}s"
           # Execute
           t = Time.now.to_f
