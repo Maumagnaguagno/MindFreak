@@ -346,7 +346,7 @@ module MindFreak
               end
             }
             # Apply if pointer ends at same point and memory[0] is a counter
-            if pointer.zero? and memory.delete(0) == -1
+            if pointer == 0 and memory.delete(0) == -1
               k = bytecode[j.succ]
               bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, nil, value]}
               i += memory.size
