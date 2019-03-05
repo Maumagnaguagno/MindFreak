@@ -9,8 +9,8 @@ Most of my work was inspired by [Nayuki] and the awesome implementation of a [Ma
 
 ## What is BrainFuck?
 BrainFuck is a simple language with almost the minimal set of instructions someone needs to do anything.
-The idea is that you are in control of a Turing machine without abstractions, like variables and function libraries, only being able to move the pointer/head and writing to the current cell in the tape.
-You only have access to this set of instructions:
+The idea is that you are in control of a Turing machine without abstractions, like variables and functions, only being able to move the pointer/head and writing to the current cell in the tape.
+You only have access to these instructions:
 - <kbd>></kbd> move pointer forward ``pointer += 1``
 - <kbd><</kbd> move pointer backward ``pointer -= 1``
 - <kbd>+</kbd> increment cell value ``tape[pointer] += 1``
@@ -22,7 +22,7 @@ You only have access to this set of instructions:
 
 ## Examples
 BrainFuck can get tricky, we need to optimize in order to generate code that finishes execution in our lifetime.
-The lack of common operators makes even simple things, like setting a variable to a zero, a loop:
+The lack of common operators makes even simple things, like assign a variable to a zero, a loop:
 
 ```
 Original:  [-]
@@ -30,7 +30,7 @@ Converted: while(tape[pointer] != 0) tape[pointer] -= 1;
 Optimized: tape[pointer] = 0;
 ```
 
-Setting a variable requires the cell to be cleared and updated:
+Variable assignment requires the cell to be cleared and updated:
 
 ```
 Original:  [-]++
@@ -80,17 +80,17 @@ ruby MindFreak.rb filename.bf [interpreter|bytecode|bytecode2|rb|c] [bounds]
 ```
 
 The current implementation expects the brainfuck filename, execution mode and tape bounds.
-The C mode is the fastest, it requires GCC in your path so you can compile and have an executable.
+The C mode is the fastest, it requires GCC to compile.
 The tape is bounded by default to 500 cells, make it 0 to support any size.
 An unbounded tape is slower and C mode will use the default size to allocate the tape.
-The main of this project is just an example of the API, you can run all modes in sequence if you like.
+The main of this project is just an example of the API, all modes can be executed in sequence.
 
 ## API
 [**MindFreak**](MindFreak.rb) is a module with 4 attributes:
 - ``attr_reader :pointer``, with the position of the current cell for interpreted execution modes, ``nil`` is the default.
 - ``attr_accessor :input``, read external data from an object that responds to ``getbyte``, ``STDIN`` is the default.
 - ``attr_accessor :output``, write external data to an object that responds to ``putc`` and ``print``, ``STDOUT`` is the default.
-- ``attr_accessor :debug``, print warnings when set to anything but ``false`` or ``nil``, ``nil`` is the default.
+- ``attr_accessor :debug``, print warnings when assigned to anything but ``false`` or ``nil``, ``nil`` is the default.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
@@ -108,9 +108,9 @@ The basic bytecode is described by the tuple ``[instruction, argument]``, in whi
 - **argument** corresponds to the amount of times this instruction is used or the index to jump in case of ``[`` or ``]``.
 
 The extended bytecode adds a multiply instruction, defined by ``*`` and more information to each bytecode.
-It is described by the tuple ``[instruction, argument, offset, set or multiplier]``, in which:
+It is described by the tuple ``[instruction, argument, offset, assign/multiplier]``, in which:
 - **offset** is added to the current pointer;
-- **set** can be used to set a cell to a value when used by ``+`` or multiplied by a factor when used by ``*``.
+- **assign/multiplier** a cell value when used by ``+`` or multiplies a cell value when used by ``*``, copy values as ``1``.
 
 The [tests](tests/rorschach.rb) include several examples and can be used as a guide.
 

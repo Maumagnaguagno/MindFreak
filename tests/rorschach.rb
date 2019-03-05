@@ -3,7 +3,7 @@ require './MindFreak'
 
 class Rorschach < Test::Unit::TestCase
 
-  SET_ONE = '[-]+'
+  ASSIGN = '[-]+'
   SUM = '[->+<] Subtract one from first cell; add to the second; repeat until first cell is zero'
   HELLO = ',,,.,.,..,.>.'
 
@@ -45,12 +45,12 @@ class Rorschach < Test::Unit::TestCase
   # Run interpreter
   #-----------------------------------------------
 
-  def test_run_interpreter_set_one
+  def test_run_interpreter_assign
     # Clear first cell and add one
-    program = SET_ONE.dup
+    program = ASSIGN.dup
     tape = [10]
     assert_nil(MindFreak.check(program))
-    assert_equal(SET_ONE, program)
+    assert_equal(ASSIGN, program)
     MindFreak.run_interpreter(program, tape)
     assert_equal([1], tape)
     assert_equal(0, MindFreak.pointer)
@@ -97,12 +97,12 @@ class Rorschach < Test::Unit::TestCase
   # Run bytecode
   #-----------------------------------------------
 
-  def test_run_bytecode_set_one
+  def test_run_bytecode_assign
     # Clear first cell and add one
-    program = SET_ONE.dup
+    program = ASSIGN.dup
     tape = [10]
     assert_nil(MindFreak.check(program))
-    assert_equal(SET_ONE, program)
+    assert_equal(ASSIGN, program)
     MindFreak.run_bytecode(program, tape)
     assert_equal([1], tape)
     assert_equal(0, MindFreak.pointer)
@@ -149,12 +149,12 @@ class Rorschach < Test::Unit::TestCase
   # Run bytecode2
   #-----------------------------------------------
 
-  def test_run_bytecode2_set_one
+  def test_run_bytecode2_assign
     # Clear first cell and add one
-    program = SET_ONE.dup
+    program = ASSIGN.dup
     tape = [10]
     assert_nil(MindFreak.check(program))
-    assert_equal(SET_ONE, program)
+    assert_equal(ASSIGN, program)
     MindFreak.run_bytecode2(program, tape)
     assert_equal([1], tape)
     assert_equal(0, MindFreak.pointer)
@@ -201,14 +201,14 @@ class Rorschach < Test::Unit::TestCase
   # Eval Ruby
   #-----------------------------------------------
 
-  def test_eval_ruby_set_one
+  def test_eval_ruby_assign
     # Clear first cell and add one
-    program = SET_ONE.dup
+    program = ASSIGN.dup
     tape = [10]
     # Ruby evaluation mode requires local pointer
     pointer = 0
     assert_nil(MindFreak.check(program))
-    assert_equal(SET_ONE, program)
+    assert_equal(ASSIGN, program)
     eval(MindFreak.to_ruby(program))
     assert_equal([1], tape)
     assert_equal(0, pointer)
@@ -248,8 +248,8 @@ class Rorschach < Test::Unit::TestCase
   # to Ruby
   #-----------------------------------------------
 
-  def test_to_ruby_set_one
-    program = SET_ONE.dup
+  def test_to_ruby_assign
+    program = ASSIGN.dup
     assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
@@ -301,8 +301,8 @@ class Rorschach < Test::Unit::TestCase
     "#include <stdio.h>\nint main(){\n  unsigned int tape[#{tape_size}] = {0}, *pointer = tape;\n  "
   end
 
-  def test_to_c_set_one
-    program = SET_ONE.dup
+  def test_to_c_assign
+    program = ASSIGN.dup
     assert_nil(MindFreak.check(program))
     # Default tape size
     assert_equal(
@@ -377,9 +377,9 @@ class Rorschach < Test::Unit::TestCase
   # Bytecode
   #-----------------------------------------------
 
-  def test_bytecode_set_one
+  def test_bytecode_assign
     # Bytecode uses [instruction, argument]
-    bytecode = MindFreak.bytecode(SET_ONE)
+    bytecode = MindFreak.bytecode(ASSIGN)
     assert_equal(
       [
         [MindFreak::JUMP,       2],
@@ -389,7 +389,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1, nil, true]
@@ -414,7 +414,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  1, nil, 1],
@@ -456,7 +456,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1,  1],
@@ -484,7 +484,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::JUMP,      6],
@@ -515,7 +515,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  2, nil, 1],
@@ -542,7 +542,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  2, nil, 5],
@@ -570,7 +570,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  2, 2, 5],
@@ -602,7 +602,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1, nil, true]
@@ -617,7 +617,7 @@ class Rorschach < Test::Unit::TestCase
     .------.--------.>>+.'
     # Remove spaces and newlines
     assert_nil(MindFreak.check(program))
-    # Optimized bytecode uses [instruction, argument, offset, set or multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 9, 1],
