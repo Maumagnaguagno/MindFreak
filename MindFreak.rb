@@ -365,11 +365,11 @@ module MindFreak
     end
     jump_stack = []
     i = -1
-    while (i += 1) < bytecode.size.pred
+    while (i += 1) < bytecode.size
       case bytecode[i].first
       # Offset >+< <.>
       when FORWARD
-        if (next_inst = bytecode[i.succ]).first < JUMP
+        if next_inst = bytecode[i.succ] and next_inst.first < JUMP
           # Original instruction uses offset
           offset = bytecode[i]
           (bytecode[i] = next_inst.equal?(clear) ? clear.dup : next_inst)[2] = offset[1]
@@ -380,23 +380,22 @@ module MindFreak
           # Swap forward with original instruction
           else bytecode[i.succ] = offset
           end
+          i -= 1
         end
       # Rebuild jump index argument, only works for bytecode
       when JUMP then jump_stack << i
       when JUMPBACK then bytecode[bytecode[i][1] = jump_stack.pop][1] = i
+      # Multiplication assigment
+      when MULTIPLY
+        if i > 0 and (a = bytecode[i.pred]).first == INCREMENT and a[1] == 0 and a[3] and a[2] == (b = bytecode[i])[1] + b[2].to_i
+          b[3] = true
+          bytecode.delete_at(i -= 1)
+        end
       end
     end
     bytecode[bytecode[i][1] = jump_stack.pop][1] = i unless jump_stack.empty?
     # Remove last forward
     bytecode.pop if bytecode.last and bytecode.last.first == FORWARD
-    # Multiplication assigment
-    i = -1
-    while (i += 1) < bytecode.size.pred
-      if (a = bytecode[i]).first == INCREMENT and a[1] == 0 and a[3] and (b = bytecode[i.succ]).first == MULTIPLY and a[2] == (b[1] + b[2].to_i)
-        b[3] = true
-        bytecode.delete_at(i)
-      end
-    end
     puts "Bytecode optimized to size: #{bytecode.size}" if @debug
     bytecode
   end
