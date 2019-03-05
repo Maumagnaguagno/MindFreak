@@ -417,7 +417,7 @@ class Rorschach < Test::Unit::TestCase
     # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
-        [MindFreak::MULTIPLY,  1, nil, 1],
+        [MindFreak::MULTIPLY,  1, nil, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
       MindFreak.optimize(bytecode)
@@ -518,8 +518,8 @@ class Rorschach < Test::Unit::TestCase
     # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
-        [MindFreak::MULTIPLY,  2, nil, 1],
-        [MindFreak::MULTIPLY,  3, nil, 1],
+        [MindFreak::MULTIPLY,  2, nil, nil, 1],
+        [MindFreak::MULTIPLY,  3, nil, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
       MindFreak.optimize(bytecode)
@@ -545,8 +545,8 @@ class Rorschach < Test::Unit::TestCase
     # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
-        [MindFreak::MULTIPLY,  2, nil, 5],
-        [MindFreak::MULTIPLY,  3, nil, 2],
+        [MindFreak::MULTIPLY,  2, nil, nil, 5],
+        [MindFreak::MULTIPLY,  3, nil, nil, 2],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
       MindFreak.optimize(bytecode)
@@ -573,9 +573,38 @@ class Rorschach < Test::Unit::TestCase
     # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
     assert_equal(
       [
-        [MindFreak::MULTIPLY,  2, 2, 5],
-        [MindFreak::MULTIPLY,  3, 2, 2],
+        [MindFreak::MULTIPLY,  2, 2, nil, 5],
+        [MindFreak::MULTIPLY,  3, 2, nil, 2],
         [MindFreak::INCREMENT, 0, 2, true]
+      ],
+      MindFreak.optimize(bytecode)
+    )
+  end
+
+  def test_bytecode_multiply_assign
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.bytecode('>>[-]<<[->>+<<]')
+    assert_equal(
+      [
+        [MindFreak::FORWARD,    2],
+        [MindFreak::JUMP,       3],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::JUMPBACK,   1],
+        [MindFreak::FORWARD,   -2],
+        [MindFreak::JUMP,      10],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::FORWARD,    2],
+        [MindFreak::INCREMENT,  1],
+        [MindFreak::FORWARD,   -2],
+        [MindFreak::JUMPBACK,   5],
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
+    assert_equal(
+      [
+        [MindFreak::MULTIPLY,  2, nil, true, 1],
+        [MindFreak::INCREMENT, 0, nil, true]
       ],
       MindFreak.optimize(bytecode)
     )
@@ -621,11 +650,11 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(
       [
         [MindFreak::INCREMENT, 9, 1],
-        [MindFreak::MULTIPLY, -1, 1, 8],
+        [MindFreak::MULTIPLY, -1, 1, nil, 8],
         [MindFreak::INCREMENT, 0, 1, true],
         [MindFreak::WRITE, 1],
         [MindFreak::INCREMENT, 7, 1],
-        [MindFreak::MULTIPLY, -1, 1, 4],
+        [MindFreak::MULTIPLY, -1, 1, nil, 4],
         [MindFreak::INCREMENT, 0, 1, true],
         [MindFreak::INCREMENT, 1],
         [MindFreak::WRITE, 1],
@@ -634,11 +663,11 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::INCREMENT, 3],
         [MindFreak::WRITE, 1],
         [MindFreak::INCREMENT, 8, 3],
-        [MindFreak::MULTIPLY, -1, 3, 4],
+        [MindFreak::MULTIPLY, -1, 3, nil, 4],
         [MindFreak::INCREMENT, 0, 3, true],
         [MindFreak::WRITE, 1, 2],
         [MindFreak::INCREMENT, 10, 5],
-        [MindFreak::MULTIPLY, -1, 5, 9],
+        [MindFreak::MULTIPLY, -1, 5, nil, 9],
         [MindFreak::INCREMENT, 0, 5, true],
         [MindFreak::INCREMENT, -3, 4],
         [MindFreak::WRITE, 1, 4],
@@ -669,7 +698,7 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     bytecode = MindFreak.bytecode(program)
     assert_equal(4115, bytecode.size)
-    assert_equal(2219, MindFreak.optimize(bytecode).size)
+    assert_equal(2177, MindFreak.optimize(bytecode).size)
     # Compare output
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)

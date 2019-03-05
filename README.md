@@ -108,9 +108,10 @@ The basic bytecode is described by the tuple ``[instruction, argument]``, in whi
 - **argument** corresponds to the amount of times this instruction is used or the index to jump in case of ``[`` or ``]``.
 
 The extended bytecode adds a multiply instruction, defined by ``*`` and more information to each bytecode.
-It is described by the tuple ``[instruction, argument, offset, assign/multiplier]``, in which:
+It is described by the tuple ``[instruction, argument, offset, assign, multiplier]``, in which:
 - **offset** is added to the current pointer;
-- **assign/multiplier** a cell value when used by ``+`` or multiplies a cell value when used by ``*``, copy values as ``1``.
+- **assign** a cell value when used by ``+`` or ``*``;
+- **multiplier** multiplies a cell value when used by ``*``, copy values with ``1``.
 
 The [tests](tests/rorschach.rb) include several examples and can be used as a guide.
 
