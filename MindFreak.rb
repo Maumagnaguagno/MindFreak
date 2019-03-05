@@ -380,7 +380,7 @@ module MindFreak
           # Swap forward with original instruction
           else bytecode[i.succ] = offset
           end
-          i -= 1
+          i -= 1 if bytecode[i].first == MULTIPLY
         end
       # Rebuild jump index argument, only works for bytecode
       when JUMP then jump_stack << i
