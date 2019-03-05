@@ -346,7 +346,7 @@ module MindFreak
               end
             }
             # Apply if pointer ends at same point and memory[0] is a counter
-            if pointer == 0 and memory.delete(0) == -1
+            if pointer.zero? and memory.delete(0) == -1
               k = bytecode[j.succ]
               bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, nil, value]}
               i += memory.size
@@ -385,9 +385,9 @@ module MindFreak
       # Rebuild jump index argument, only works for bytecode
       when JUMP then jump_stack << i
       when JUMPBACK then bytecode[bytecode[i][1] = jump_stack.pop][1] = i
-      # Multiplication assigment
+      # Multiplication assignment
       when MULTIPLY
-        if i > 0 and (a = bytecode[i.pred]).first == INCREMENT and a[1] == 0 and a[3] and a[2] == (b = bytecode[i])[1] + b[2].to_i
+        if i > 0 and (a = bytecode[i.pred]).first == INCREMENT and a[1].zero? and a[3] and a[2] == (b = bytecode[i])[1] + b[2].to_i
           b[3] = true
           bytecode.delete_at(i -= 1)
         end
