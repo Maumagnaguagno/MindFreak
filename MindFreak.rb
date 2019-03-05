@@ -342,8 +342,13 @@ module MindFreak
             }
             # Apply if pointer ends at same point and memory[0] is a counter
             if pointer == 0 and memory.delete(0) == -1
-              bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, value]} << clear
-              i += memory.size.succ
+              k = bytecode[j.succ]
+              bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, value]}
+              i += memory.size
+              if k and k.first == INCREMENT then k[3] = true
+              else bytecode.insert(i, clear)
+              end
+              i += 1
               memory.clear
             else
               memory.clear

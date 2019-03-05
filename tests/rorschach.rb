@@ -669,7 +669,7 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     bytecode = MindFreak.bytecode(program)
     assert_equal(4115, bytecode.size)
-    assert_equal(2246, MindFreak.optimize(bytecode).size)
+    assert_equal(2219, MindFreak.optimize(bytecode).size)
     # Compare output
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)
