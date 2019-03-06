@@ -389,7 +389,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1, nil, true]
@@ -414,7 +414,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  1, nil, nil, 1],
@@ -456,7 +456,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1,  1],
@@ -484,7 +484,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::JUMP,      6],
@@ -515,7 +515,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  2, nil, nil, 1],
@@ -542,7 +542,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  2, nil, nil, 5],
@@ -570,7 +570,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::MULTIPLY,  2, 2, nil, 5],
@@ -631,7 +631,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       bytecode
     )
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 1, nil, true]
@@ -646,7 +646,7 @@ class Rorschach < Test::Unit::TestCase
     .------.--------.>>+.'
     # Remove spaces and newlines
     assert_nil(MindFreak.check(program))
-    # Optimized bytecode uses [instruction, argument, offset, assign/multiplier]
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
     assert_equal(
       [
         [MindFreak::INCREMENT, 9, 1],
