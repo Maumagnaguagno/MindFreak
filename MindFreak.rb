@@ -302,65 +302,53 @@ module MindFreak
   #-----------------------------------------------
 
   def optimize(bytecode)
-    # Clear [-] [+] or Assign [-]+ [+]-
     clear = [INCREMENT, 0, nil, true]
-    i = -1
-    while (i += 1) < bytecode.size
-      if bytecode[i].first == JUMP and bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
-        # Assign
-        if bytecode[i+3].first == INCREMENT
-          bytecode[i] = [INCREMENT, bytecode[i+3][1], nil, true]
-          bytecode.slice!(i.succ,3)
-        # Clear
-        else
-          bytecode[i] = clear
-          bytecode.slice!(i.succ,2)
-        end
-        # Previous increment operation is redundant
-        bytecode.delete_at(i -= 1) if i != 0 and bytecode[i.pred].first == INCREMENT
-      end
-    end
-    # Multiplication [->+<]
     memory = Hash.new(0)
     i = -1
     while (i += 1) < bytecode.size
-      # Start of loop
-      if bytecode[i].first == JUMP
-        j = i
-        while (j += 1) < bytecode.size
-          case bytecode[j].first
-          # Inner loop has been found
-          when JUMP then i = j
-          # End of loop
-          when JUMPBACK
-            # Extract data
-            pointer = 0
-            i.succ.upto(j.pred) {|k|
-              if (k = bytecode[k]).first == FORWARD
-                pointer += k[1]
-              elsif k.first == INCREMENT and not k[3]
-                memory[pointer] += k[1]
-              else
-                pointer = nil
-                break
-              end
-            }
-            # Apply if pointer ends at same point and memory[0] is a counter
-            if pointer == 0 and memory.delete(0) == -1
-              k = bytecode[j.succ]
-              bytecode[i..j] = memory.map {|key,value| [MULTIPLY, key, nil, nil, value]}
-              i += memory.size
-              if k and k.first == INCREMENT then k[3] = true
-              else bytecode.insert(i, clear)
-              end
-              i += 1
-              memory.clear
-            else
-              memory.clear
-              break
-            end
+      case bytecode[i].first
+      # Clear [-] [+] or Assign [-]+ [+]-
+      when JUMP
+        if bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
+          # Assign
+          if bytecode[i+3].first == INCREMENT
+            bytecode[i] = [INCREMENT, bytecode[i+3][1], nil, true]
+            bytecode.slice!(i.succ,3)
+          # Clear
+          else
+            bytecode[i] = clear
+            bytecode.slice!(i.succ,2)
           end
+          # Previous increment operation is redundant
+          bytecode.delete_at(i -= 1) if i != 0 and bytecode[i.pred].first == INCREMENT
+        else start = i
         end
+      # Multiplication [->+<]
+      when JUMPBACK
+        next unless start
+        # Extract data
+        pointer = 0
+        start.succ.upto(i.pred) {|k|
+          if (k = bytecode[k]).first == FORWARD
+            pointer += k[1]
+          elsif k.first == INCREMENT and not k[3]
+            memory[pointer] += k[1]
+          else
+            pointer = start = nil
+            break
+          end
+        }
+        # Apply if pointer ends at same point and memory[0] is a counter
+        if pointer == 0 and memory.delete(0) == -1
+          k = bytecode[i.succ]
+          bytecode[start..i] = memory.map {|key,value| [MULTIPLY, key, nil, nil, value]}
+          i = start + memory.size
+          if k and k.first == INCREMENT then k[3] = true
+          else bytecode.insert(i, clear)
+          end
+          i += 1
+        end
+        memory.clear
       end
     end
     jump_stack = []
