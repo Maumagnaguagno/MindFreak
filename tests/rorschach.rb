@@ -32,7 +32,7 @@ class Rorschach < Test::Unit::TestCase
   def test_check_open_bracket_exception
     # Expected to raise an exception
     e = assert_raises(RuntimeError) {MindFreak.check('[-[')}
-    assert_equal('Expected [', e.message)
+    assert_equal('Expected ]', e.message)
   end
 
   def test_check_close_bracket_exception

@@ -42,7 +42,7 @@ module MindFreak
       elsif c == JUMPBACK and (control -= 1) < 0 then raise 'Unexpected ] found'
       end
     }
-    raise 'Expected [' unless control.zero?
+    raise 'Expected ]' unless control.zero?
   end
 
   #-----------------------------------------------
