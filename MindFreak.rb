@@ -381,7 +381,6 @@ module MindFreak
         end
       end
     end
-    bytecode[bytecode[i][1] = jump_stack.pop][1] = i unless jump_stack.empty?
     # Remove last forward
     bytecode.pop if bytecode.last and bytecode.last.first == FORWARD
     puts "Bytecode optimized to size: #{bytecode.size}" if @debug
