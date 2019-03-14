@@ -142,8 +142,8 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   - Ruby and C methods generate code instead of execution
   - Multiplication optimization
   - Bytecode2 interpreter
-  - Removed program and tape from instance variables
-  - Removed setup
+  - Remove program and tape from instance variables
+  - Remove setup
 - Mar 2016
   - Retire 1.8.7
   -  Record only last byte from consecutive reads
