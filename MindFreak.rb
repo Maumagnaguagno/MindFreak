@@ -311,7 +311,7 @@ module MindFreak
       when JUMP
         if bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
           # Assign
-          if bytecode[i+3].first == INCREMENT
+          if bytecode[i+3] and bytecode[i+3].first == INCREMENT
             bytecode[i] = [INCREMENT, bytecode[i+3][1], nil, true]
             bytecode.slice!(i.succ,3)
           # Clear

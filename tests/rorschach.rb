@@ -441,6 +441,8 @@ class Rorschach < Test::Unit::TestCase
     assert_equal([], MindFreak.bytecode('<<>>'))
     # Empty bytecode is optimal
     assert_equal([], MindFreak.optimize([]))
+    # Clear
+    assert_equal([[MindFreak::INCREMENT, 0, nil, true]], MindFreak.optimize(MindFreak.bytecode('+[-]')))
   end
 
   def test_bytecode_offset
