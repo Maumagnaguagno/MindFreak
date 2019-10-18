@@ -456,9 +456,9 @@ if $0 == __FILE__
   rescue Interrupt
     case mode
     when 'interpreter', 'bytecode', 'bytecode2'
-      puts "\nTape: #{tape.inspect}", "Pointer: #{MindFreak.pointer}"
+      puts "\nTape: #{tape}", "Pointer: #{MindFreak.pointer}"
     when 'rb'
-      puts "\nTape: #{tape.inspect}", "Pointer: #{pointer}"
+      puts "\nTape: #{tape}", "Pointer: #{pointer}"
     end
   rescue
     puts $!, $@
