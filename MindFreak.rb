@@ -176,28 +176,28 @@ module MindFreak
   def to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')
     # Tape definition
     code = tape ? tape.empty? ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape.size},0)\npointer = 0" : ''
-    indent = ''
+    indent = "\n"
     # Match bytecode
     optimize(bytecode(program)).each {|c,arg,offset,assign,multiplier|
       case c
       when INCREMENT # Tape
-        code << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless assign}= #{arg}"
+        code << "#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless assign}= #{arg}"
       when FORWARD # Pointer
-        code << "\n#{indent}pointer += #{arg}"
+        code << "#{indent}pointer += #{arg}"
       when WRITE # Write
         c = "tape[pointer#{"+#{offset}" if offset}]"
-        code << "\n#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
+        code << "#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
       when READ # Read
-        code << "\n#{indent}#{input}.read(#{arg.pred})" if arg > 1
-        code << "\n#{indent}tape[pointer#{"+#{offset}" if offset}] = #{input}.getbyte.to_i"
+        code << "#{indent}#{input}.read(#{arg.pred})" if arg > 1
+        code << "#{indent}tape[pointer#{"+#{offset}" if offset}] = #{input}.getbyte.to_i"
       when JUMP # Jump if zero
-        code << "\n#{indent}until tape[pointer].zero?"
+        code << "#{indent}until tape[pointer].zero?"
         indent << '  '
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
-        code << "\n#{indent}end"
+        code << "#{indent}end"
       when MULTIPLY # Multiplication
-        code << "\n#{indent}tape[pointer+#{offset ? offset + arg : arg}] #{'+' unless assign}= tape[pointer#{"+#{offset}" if offset}]#{" * #{multiplier}" if multiplier != 1}"
+        code << "#{indent}tape[pointer+#{offset ? offset + arg : arg}] #{'+' unless assign}= tape[pointer#{"+#{offset}" if offset}]#{" * #{multiplier}" if multiplier != 1}"
       else raise "Unknown bytecode: #{c}"
       end
     }
@@ -215,33 +215,33 @@ module MindFreak
     end
     eof_variable = nil
     code = ''
-    indent = '  '
+    indent = "\n  "
     # Match bytecode
     optimize(bytecode(program)).each {|c,arg,offset,assign,multiplier|
       case c
       when INCREMENT # Tape
-        code << "\n#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless assign}= #{arg};"
+        code << "#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless assign}= #{arg};"
       when FORWARD # Pointer
-        code << "\n#{indent}pointer += #{arg};"
+        code << "#{indent}pointer += #{arg};"
       when WRITE # Write
         c = "putchar(*(pointer#{"+#{offset}" if offset}));"
-        code << "\n#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
+        code << "#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
       when READ # Read
-        code << "\n#{indent}for(unsigned int i = #{arg.pred}; i; --i) getchar();" if arg > 1
+        code << "#{indent}for(unsigned int i = #{arg.pred}; i; --i) getchar();" if arg > 1
         if eof == -1
-          code << "\n#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
+          code << "#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
         else
-          code << "\n#{indent}c = getchar();\n#{indent}(*(pointer#{"+#{offset}" if offset})) = c == EOF ? #{eof} : c;"
+          code << "#{indent}c = getchar();#{indent}(*(pointer#{"+#{offset}" if offset})) = c == EOF ? #{eof} : c;"
           eof_variable ||= "\n  int c;"
         end
       when JUMP # Jump if zero
-        code << "\n#{indent}while(*pointer){"
+        code << "#{indent}while(*pointer){"
         indent << '  '
       when JUMPBACK # Return unless zero
         indent.slice!(0,2)
-        code << "\n#{indent}}"
+        code << "#{indent}}"
       when MULTIPLY # Multiplication
-        code << "\n#{indent}*(pointer+#{offset ? offset + arg : arg}) #{'+' unless assign}= *(pointer#{"+#{offset}" if offset})#{" * #{multiplier}" if multiplier != 1};"
+        code << "#{indent}*(pointer+#{offset ? offset + arg : arg}) #{'+' unless assign}= *(pointer#{"+#{offset}" if offset})#{" * #{multiplier}" if multiplier != 1};"
       else raise "Unknown bytecode: #{c}"
       end
     }
