@@ -213,9 +213,8 @@ module MindFreak
       tape_size = TAPE_DEFAULT_SIZE
       puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
     end
-    # Header
-    code = "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0}, *pointer = tape;"
-    code << "\n  int c;" if eof != -1
+    eof_variable = nil
+    code = ''
     indent = '  '
     # Match bytecode
     optimize(bytecode(program)).each {|c,arg,offset,assign,multiplier|
@@ -233,6 +232,7 @@ module MindFreak
           code << "\n#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
         else
           code << "\n#{indent}c = getchar();\n#{indent}(*(pointer#{"+#{offset}" if offset})) = c == EOF ? #{eof} : c;"
+          eof_variable ||= "\n  int c;"
         end
       when JUMP # Jump if zero
         code << "\n#{indent}while(*pointer){"
@@ -245,7 +245,7 @@ module MindFreak
       else raise "Unknown bytecode: #{c}"
       end
     }
-    code << "\n  return 0;\n}"
+    "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0}, *pointer = tape;#{eof_variable}#{code}\n  return 0;\n}"
   end
 
   #-----------------------------------------------

@@ -308,21 +308,13 @@ class Rorschach < Test::Unit::TestCase
     # Default tape size
     assert_equal(
       "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}*(pointer) = 1;\n  return 0;\n}",
-      MindFreak.to_c(program, [], -1)
-    )
-    assert_equal(
-      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}int c;\n  *(pointer) = 1;\n  return 0;\n}",
       MindFreak.to_c(program, [])
     )
     # User tape size
     tape = [0,0]
     assert_equal(
-      "#{c_header(2)}int c;\n  *(pointer) = 1;\n  return 0;\n}",
-      MindFreak.to_c(program, tape)
-    )
-    assert_equal(
       "#{c_header(2)}*(pointer) = 1;\n  return 0;\n}",
-      MindFreak.to_c(program, tape, -1)
+      MindFreak.to_c(program, tape)
     )
   end
 
@@ -332,20 +324,12 @@ class Rorschach < Test::Unit::TestCase
     # Default tape size
     assert_equal(
       "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}*(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
-      MindFreak.to_c(program, [], -1)
-    )
-    assert_equal(
-      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}int c;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
       MindFreak.to_c(program, [])
     )
     # User tape size
     tape = [0,0]
     assert_equal(
       "#{c_header(2)}*(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
-      MindFreak.to_c(program, tape, -1)
-    )
-    assert_equal(
-      "#{c_header(2)}int c;\n  *(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
       MindFreak.to_c(program, tape)
     )
   end
