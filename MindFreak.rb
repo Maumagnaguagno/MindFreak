@@ -52,7 +52,7 @@ module MindFreak
   def run_interpreter(program, tape)
     program_size = program.size
     program_counter = -1
-    control = @pointer = 0
+    @pointer = 0
     # Intepreter
     until (program_counter += 1) == program_size
       case program[program_counter]
@@ -194,7 +194,7 @@ module MindFreak
         code << "#{indent}until tape[pointer].zero?"
         indent << '  '
       when JUMPBACK # Return unless zero
-        indent.slice!(0,2)
+        indent.slice!(-2,2)
         code << "#{indent}end"
       when MULTIPLY # Multiplication
         code << "#{indent}tape[pointer+#{offset ? offset + arg : arg}] #{'+' unless assign}= tape[pointer#{"+#{offset}" if offset}]#{" * #{multiplier}" if multiplier != 1}"
@@ -238,7 +238,7 @@ module MindFreak
         code << "#{indent}while(*pointer){"
         indent << '  '
       when JUMPBACK # Return unless zero
-        indent.slice!(0,2)
+        indent.slice!(-2,2)
         code << "#{indent}}"
       when MULTIPLY # Multiplication
         code << "#{indent}*(pointer+#{offset ? offset + arg : arg}) #{'+' unless assign}= *(pointer#{"+#{offset}" if offset})#{" * #{multiplier}" if multiplier != 1};"

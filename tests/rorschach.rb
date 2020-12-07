@@ -294,6 +294,16 @@ class Rorschach < Test::Unit::TestCase
     )
   end
 
+  def test_to_ruby_infinite_loop
+    program = '[]'
+    assert_nil(MindFreak.check(program))
+    # Default tape size
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\nuntil tape[pointer].zero?\nend",
+      MindFreak.to_ruby(program, [])
+    )
+  end
+
   #-----------------------------------------------
   # to C
   #-----------------------------------------------
@@ -355,6 +365,16 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(
       "#{c_header(2)}int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  (*(pointer)) = c == EOF ? 0 : c;\n  return 0;\n}",
       MindFreak.to_c(program, tape)
+    )
+  end
+
+  def test_to_c_infinite_loop
+    program = '[]'
+    assert_nil(MindFreak.check(program))
+    # Default tape size
+    assert_equal(
+      "#{c_header(MindFreak::TAPE_DEFAULT_SIZE)}while(*pointer){\n  }\n  return 0;\n}",
+      MindFreak.to_c(program, [], -1)
     )
   end
 
