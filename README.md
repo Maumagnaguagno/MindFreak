@@ -1,4 +1,4 @@
-# MindFreak [![Build Status](https://travis-ci.org/Maumagnaguagno/MindFreak.svg)](https://travis-ci.org/Maumagnaguagno/MindFreak) [![Actions Status](https://github.com/Maumagnaguagno/MindFreak/workflows/build/badge.svg)](https://github.com/Maumagnaguagno/MindFreak/actions?query=workflow%3A"build")
+# MindFreak [![Build Status](https://travis-ci.org/Maumagnaguagno/MindFreak.svg)](https://travis-ci.org/Maumagnaguagno/MindFreak) [![Actions Status](https://github.com/Maumagnaguagno/MindFreak/workflows/build/badge.svg)](https://github.com/Maumagnaguagno/MindFreak/actions)
 **A BrainFuck interpreter with bytecode and language conversion**
 
 Started this project during October 2013 to see something easy to parse for a change.
