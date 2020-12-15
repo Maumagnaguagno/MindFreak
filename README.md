@@ -151,10 +151,12 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   - Use default tape size if no tape is provided
 - Mar 2019
   - Optimize read/write instructions
+- Dec 2020
+  - Fix jump index bytecode
 
 ## ToDo's
 - Generate C code with non-blank initial tape
-- C mode non-modifiable EOF
+- Support all three normal form of EOF (0, -1, unchanged)
 - Step-by-step/interactive mode, breakpoint
 - Add examples
 

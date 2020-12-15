@@ -284,7 +284,7 @@ module MindFreak
         else
           last = 0
           if c == JUMP
-            bytecode << [c]
+            bytecode << [JUMP]
             jump_stack << index
           else
             # Jump program counter to index, only works for bytecode
@@ -419,17 +419,17 @@ if $0 == __FILE__
         puts 'Interpreter Mode'
         t = Time.now.to_f
         MindFreak.run_interpreter(program, tape)
-        puts "\nTime: #{Time.now.to_f - t}s",'Tape:', tape.inspect
+        puts "\nTime: #{Time.now.to_f - t}s", 'Tape:', tape.inspect
       when 'bytecode'
         puts 'Bytecode Mode'
         t = Time.now.to_f
         MindFreak.run_bytecode(program, tape)
-        puts "\nTime: #{Time.now.to_f - t}s",'Tape:', tape.inspect
+        puts "\nTime: #{Time.now.to_f - t}s", 'Tape:', tape.inspect
       when 'bytecode2'
         puts 'Bytecode2 Mode'
         t = Time.now.to_f
         MindFreak.run_bytecode2(program, tape)
-        puts "\nTime: #{Time.now.to_f - t}s",'Tape:', tape.inspect
+        puts "\nTime: #{Time.now.to_f - t}s", 'Tape:', tape.inspect
       when 'rb'
         puts 'Ruby Mode'
         t = Time.now.to_f
