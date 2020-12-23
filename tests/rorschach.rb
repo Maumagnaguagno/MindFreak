@@ -448,6 +448,20 @@ class Rorschach < Test::Unit::TestCase
     assert_equal([], MindFreak.optimize([]))
     # Clear
     assert_equal([[MindFreak::INCREMENT, 0, nil, true]], MindFreak.optimize(MindFreak.bytecode('+[-]')))
+    # Mix increments and movements
+    assert_equal([[MindFreak::INCREMENT, 1]], MindFreak.bytecode('-+>+-<+'))
+    # Mix with loops
+    assert_equal(
+      [
+        [MindFreak::JUMP, 3],
+        [MindFreak::JUMP, 2],
+        [MindFreak::JUMPBACK, 1],
+        [MindFreak::JUMPBACK, 0],
+        [MindFreak::JUMP, 5],
+        [MindFreak::JUMPBACK, 4],
+      ],
+      MindFreak.bytecode('[<>[]+-][]')
+    )
   end
 
   def test_bytecode_offset
