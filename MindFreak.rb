@@ -262,14 +262,14 @@ module MindFreak
       if c == last
         if (bytecode.last[1] += 1).zero?
           bytecode.pop
-          last = bytecode.empty? || bytecode.last.first >= JUMP ? 0 : bytecode.last.first
+          last = bytecode.last && bytecode.last.first < JUMP ? bytecode.last.first : 0
           index -= 1
         end
       # Disguised repeated instruction
       elsif (c == DECREMENT and last == INCREMENT) or (c == BACKWARD and last == FORWARD)
         if (bytecode.last[1] -= 1).zero?
           bytecode.pop
-          last = bytecode.empty? || bytecode.last.first >= JUMP ? 0 : bytecode.last.first
+          last = bytecode.last && bytecode.last.first < JUMP ? bytecode.last.first : 0
           index -= 1
         end
       else
