@@ -345,10 +345,11 @@ module MindFreak
           k = bytecode[i.succ]
           bytecode[start..i] = memory.map {|key,value| [MULTIPLY, key, nil, nil, value]}
           i = start + memory.size
-          if k and k.first == INCREMENT then k[3] = true
+          if k and k.first == INCREMENT
+            k[3] = true
+            i += 1
           else bytecode.insert(i, clear)
           end
-          i += 1
         end
         memory.clear
       end

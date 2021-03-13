@@ -458,7 +458,7 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::JUMPBACK, 1],
         [MindFreak::JUMPBACK, 0],
         [MindFreak::JUMP, 5],
-        [MindFreak::JUMPBACK, 4],
+        [MindFreak::JUMPBACK, 4]
       ],
       MindFreak.bytecode('[<>[]+-][]')
     )
@@ -514,7 +514,7 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::JUMP,      5],
         [MindFreak::WRITE,     1],
         [MindFreak::JUMPBACK,  3],
-        [MindFreak::JUMPBACK,  0],
+        [MindFreak::JUMPBACK,  0]
       ],
       MindFreak.optimize(bytecode)
     )
@@ -617,7 +617,7 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::FORWARD,    2],
         [MindFreak::INCREMENT,  1],
         [MindFreak::FORWARD,   -2],
-        [MindFreak::JUMPBACK,   5],
+        [MindFreak::JUMPBACK,   5]
       ],
       bytecode
     )
@@ -626,6 +626,37 @@ class Rorschach < Test::Unit::TestCase
       [
         [MindFreak::MULTIPLY,  2, nil, true, 1],
         [MindFreak::INCREMENT, 0, nil, true]
+      ],
+      MindFreak.optimize(bytecode)
+    )
+  end
+
+  def test_bytecode_multiply_with_clear
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.bytecode('[-][->+<][-]')
+    assert_equal(
+      [
+        [MindFreak::JUMP,       2],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::JUMPBACK,   0],
+        [MindFreak::JUMP,       8],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::FORWARD,    1],
+        [MindFreak::INCREMENT,  1],
+        [MindFreak::FORWARD,   -1],
+        [MindFreak::JUMPBACK,   3],
+        [MindFreak::JUMP,      11],
+        [MindFreak::INCREMENT, -1],
+        [MindFreak::JUMPBACK,   9]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
+    assert_equal(
+      [
+        [MindFreak::INCREMENT, 0, nil, true],
+        [MindFreak::MULTIPLY,  1, nil, nil, 1],
+        [MindFreak::INCREMENT, 0, nil, true],
       ],
       MindFreak.optimize(bytecode)
     )
