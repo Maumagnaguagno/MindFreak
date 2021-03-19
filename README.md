@@ -101,7 +101,7 @@ The bytecode generated is an Array of Arrays and differ from the basic to the op
 - ``to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')`` returns a string with a Ruby equivalent to the program provided. If no tape is provided the string will not contain a tape and pointer declaration, this forces ``eval`` to use external variables.
 - ``to_c(program, tape = nil, eof = 0, type = 'unsigned int')`` returns a string with a C equivalent to the program provided. The type contains the cell type being used. If no tape is provided the default tape size is used.
 - ``bytecode(program)`` returns an Array with the bytecodes.
-- ``optimize(bytecode)`` returns an Array with the optimized bytecodes.
+- ``optimize(bytecode, blank_tape = false)`` returns an Array with the optimized bytecodes, which can be further optimized if the tape is blank.
 
 The basic bytecode is described by the tuple ``[instruction, argument]``, in which:
 - **instruction** corresponds to the byte value of each instruction char used in BrainFuck;

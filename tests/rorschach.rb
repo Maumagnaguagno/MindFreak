@@ -274,8 +274,12 @@ class Rorschach < Test::Unit::TestCase
     )
     # Array tape
     assert_equal(
-      "tape = Array.new(1,0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
-      MindFreak.to_ruby(program, [0])
+      "tape = Array.new(2,0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
+      MindFreak.to_ruby(program, [5,10])
+    )
+    assert_equal(
+      "tape = Array.new(2,0)\npointer = 0",
+      MindFreak.to_ruby(program, [0,10])
     )
   end
 
@@ -337,7 +341,7 @@ class Rorschach < Test::Unit::TestCase
       MindFreak.to_c(program, [])
     )
     # User tape size
-    tape = [0,0]
+    tape = [5,10]
     assert_equal(
       "#{c_header(2)}*(pointer+1) += *(pointer);\n  *(pointer) = 0;\n  return 0;\n}",
       MindFreak.to_c(program, tape)
@@ -425,8 +429,9 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::MULTIPLY,  1, nil, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
-      MindFreak.optimize(bytecode)
+      MindFreak.optimize(bytecode.dup)
     )
+    assert_equal([], MindFreak.optimize(bytecode, true))
   end
 
   def test_bytecode_nullification
@@ -518,6 +523,7 @@ class Rorschach < Test::Unit::TestCase
       ],
       MindFreak.optimize(bytecode)
     )
+    assert_equal([], MindFreak.optimize(bytecode, true))
   end
 
   def test_bytecode_copy
@@ -543,8 +549,9 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::MULTIPLY,  3, nil, nil, 1],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
-      MindFreak.optimize(bytecode)
+      MindFreak.optimize(bytecode.dup)
     )
+    assert_equal([], MindFreak.optimize(bytecode, true))
   end
 
   def test_bytecode_multiply
@@ -570,8 +577,9 @@ class Rorschach < Test::Unit::TestCase
         [MindFreak::MULTIPLY,  3, nil, nil, 2],
         [MindFreak::INCREMENT, 0, nil, true]
       ],
-      MindFreak.optimize(bytecode)
+      MindFreak.optimize(bytecode.dup)
     )
+    assert_equal([], MindFreak.optimize(bytecode, true))
   end
 
   def test_bytecode_multiply_with_offset

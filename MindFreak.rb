@@ -131,7 +131,7 @@ module MindFreak
 
   def run_bytecode2(program, tape)
     # Bytecode2 interpreter support optimizations
-    bytecode = optimize(bytecode(program))
+    bytecode = optimize(bytecode(program), tape[0] == 0)
     program_size = bytecode.size
     program_counter = -1
     @pointer = 0
@@ -178,7 +178,7 @@ module MindFreak
     code = tape ? tape.empty? ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape.size},0)\npointer = 0" : ''
     indent = "\n"
     # Match bytecode
-    optimize(bytecode(program)).each {|c,arg,offset,assign,multiplier|
+    optimize(bytecode(program), tape && tape[0] == 0).each {|c,arg,offset,assign,multiplier|
       case c
       when INCREMENT # Tape
         code << "#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless assign}= #{arg}"
@@ -217,7 +217,7 @@ module MindFreak
     code = ''
     indent = "\n  "
     # Match bytecode
-    optimize(bytecode(program)).each {|c,arg,offset,assign,multiplier|
+    optimize(bytecode(program), tape && tape[0] == 0).each {|c,arg,offset,assign,multiplier|
       case c
       when INCREMENT # Tape
         code << "#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless assign}= #{arg};"
@@ -303,7 +303,9 @@ module MindFreak
   # Optimize
   #-----------------------------------------------
 
-  def optimize(bytecode)
+  def optimize(bytecode, blank_tape = false)
+    # Dead code elimination
+    bytecode.shift(bytecode[0].last+1) if blank_tape and bytecode[0].first == JUMP and not bytecode[1].first == INCREMENT && bytecode[2].first == JUMPBACK
     clear = [INCREMENT, 0, nil, true]
     memory = Hash.new(0)
     i = -1
