@@ -177,27 +177,34 @@ module MindFreak
     # Tape definition
     code = tape.instance_of?(Array) || tape.instance_of?(Hash) ? '' : tape == 0 ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape || TAPE_DEFAULT_SIZE},0)\npointer = 0"
     indent = "\n"
+    looped = false
+    pointer = 0
     # Match bytecode
     optimize(bytecode(program), !code.empty? || tape[0] == 0).each {|c,arg,offset,assign,multiplier|
       case c
       when INCREMENT # Tape
-        code << "#{indent}tape[pointer#{"+#{offset}" if offset}] #{'+' unless assign}= #{arg}"
+        code << "#{indent}tape[#{looped ? "pointer#{"+#{offset}" if offset}" : offset ? offset + pointer : pointer}] #{'+' unless assign}= #{arg}"
       when FORWARD # Pointer
-        code << "#{indent}pointer += #{arg}"
+        code << (looped ? "#{indent}pointer += #{arg}" : "#{indent}pointer = #{pointer += arg}")
       when WRITE # Write
-        c = "tape[pointer#{"+#{offset}" if offset}]"
+        c = "tape[#{looped ? "pointer#{"+#{offset}" if offset}" : offset ? offset + pointer : pointer}]"
         code << "#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
       when READ # Read
         code << "#{indent}#{input}.read(#{arg.pred})" if arg > 1
-        code << "#{indent}tape[pointer#{"+#{offset}" if offset}] = #{input}.getbyte.to_i"
+        code << "#{indent}tape[#{looped ? "pointer#{"+#{offset}" if offset}" : offset ? offset + pointer : pointer}] = #{input}.getbyte.to_i"
       when JUMP # Jump if zero
+        looped = true
         code << "#{indent}until tape[pointer].zero?"
         indent << '  '
       when JUMPBACK # Return unless zero
         indent.slice!(-2,2)
         code << "#{indent}end"
       when MULTIPLY # Multiplication
-        code << "#{indent}tape[pointer+#{offset ? offset + arg : arg}] #{'+' unless assign}= tape[pointer#{"+#{offset}" if offset}]#{" * #{multiplier}" if multiplier != 1}"
+        if looped
+          code << "#{indent}tape[pointer+#{offset ? offset + arg : arg}] #{'+' unless assign}= tape[pointer#{"+#{offset}" if offset}]#{" * #{multiplier}" if multiplier != 1}"
+        else
+          code << "#{indent}tape[#{offset ? offset + pointer + arg : pointer + arg}] #{'+' unless assign}= tape[#{offset ? offset + pointer : pointer}]#{" * #{multiplier}" if multiplier != 1}"
+        end
       else raise "Unknown bytecode: #{c}"
       end
     }
