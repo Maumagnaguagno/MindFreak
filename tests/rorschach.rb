@@ -210,7 +210,7 @@ class Rorschach < Test::Unit::TestCase
     pointer = 0
     assert_nil(MindFreak.check(program))
     assert_equal(ASSIGN, program)
-    eval(MindFreak.to_ruby(program))
+    eval(MindFreak.to_ruby(program, tape))
     assert_equal([1], tape)
     assert_equal(0, pointer)
   end
@@ -223,7 +223,7 @@ class Rorschach < Test::Unit::TestCase
     pointer = 0
     assert_nil(MindFreak.check(program))
     assert_equal('[->+<]', program)
-    eval(MindFreak.to_ruby(program))
+    eval(MindFreak.to_ruby(program, tape))
     assert_equal([0, 15], tape)
     assert_equal(0, pointer)
   end
@@ -238,7 +238,7 @@ class Rorschach < Test::Unit::TestCase
     pointer = 0
     assert_nil(MindFreak.check(program))
     # Connect input and output local variables
-    eval(MindFreak.to_ruby(program, nil, 'input', 'output'))
+    eval(MindFreak.to_ruby(program, tape, 'input', 'output'))
     assert_equal([111, 33], tape)
     assert_equal(0, pointer)
     assert_equal('  Helo', input.string)
@@ -255,12 +255,12 @@ class Rorschach < Test::Unit::TestCase
     # Hash tape
     assert_equal(
       "tape = Hash.new(0)\npointer = 0\ntape[pointer] = 1",
-      MindFreak.to_ruby(program, [])
+      MindFreak.to_ruby(program, 0)
     )
     # Array tape
     assert_equal(
       "tape = Array.new(1,0)\npointer = 0\ntape[pointer] = 1",
-      MindFreak.to_ruby(program, [0])
+      MindFreak.to_ruby(program, 1)
     )
   end
 
@@ -269,17 +269,26 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
-      MindFreak.to_ruby(program, [])
+      "\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
+      MindFreak.to_ruby(program, {})
+    )
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0",
+      MindFreak.to_ruby(program, 0)
     )
     # Array tape
     assert_equal(
-      "tape = Array.new(2,0)\npointer = 0\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
+      "\ntape[pointer+1] += tape[pointer]\ntape[pointer] = 0",
       MindFreak.to_ruby(program, [5,10])
     )
+    assert_equal('', MindFreak.to_ruby(program, [0,10]))
     assert_equal(
-      "tape = Array.new(2,0)\npointer = 0",
-      MindFreak.to_ruby(program, [0,10])
+      "tape = Array.new(20,0)\npointer = 0",
+      MindFreak.to_ruby(program, 20)
+    )
+    assert_equal(
+      "tape = Array.new(#{MindFreak::TAPE_DEFAULT_SIZE},0)\npointer = 0",
+      MindFreak.to_ruby(program)
     )
   end
 
@@ -289,11 +298,11 @@ class Rorschach < Test::Unit::TestCase
     # Hash tape
     assert_equal(
       "tape = Hash.new(0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.getbyte.to_i",
-      MindFreak.to_ruby(program, [])
+      MindFreak.to_ruby(program, 0)
     )
     # Array tape
     assert_equal(
-      "tape = Array.new(1,0)\npointer = 0\nSTDIN.read(4)\ntape[pointer] = STDIN.getbyte.to_i",
+      "\nSTDIN.read(4)\ntape[pointer] = STDIN.getbyte.to_i",
       MindFreak.to_ruby(program, [0])
     )
   end
@@ -301,9 +310,23 @@ class Rorschach < Test::Unit::TestCase
   def test_to_ruby_infinite_loop
     program = '[]'
     assert_nil(MindFreak.check(program))
-    # Default tape size
+    # Hash
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nuntil tape[pointer].zero?\nend",
+      "tape = Hash.new(0)\npointer = 0",
+      MindFreak.to_ruby(program, 0)
+    )
+    assert_equal(
+      "\nuntil tape[pointer].zero?\nend",
+      MindFreak.to_ruby(program, {})
+    )
+    # Array
+    assert_equal(
+      "tape = Array.new(5,0)\npointer = 0",
+      MindFreak.to_ruby(program, 5)
+    )
+    assert_equal('', MindFreak.to_ruby(program, [0]))
+    assert_equal(
+      "\nuntil tape[pointer].zero?\nend",
       MindFreak.to_ruby(program, [])
     )
   end
