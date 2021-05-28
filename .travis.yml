@@ -10,11 +10,8 @@ rvm:
   - 2.5.0
   - 2.6.0
   - 2.7.0
+  - 3.0.0
   # Others
   - jruby
   - truffleruby
-matrix:
-  allow_failures:
-  - rvm: jruby
-  - rvm: truffleruby
 script: ruby tests/rorschach.rb
