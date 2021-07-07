@@ -323,12 +323,12 @@ module MindFreak
         if bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
           # Assign
           if bytecode[i+3] and bytecode[i+3].first == INCREMENT
-            bytecode[i+3].push(nil, true)
             bytecode.slice!(i,3)
+            bytecode[i].push(nil, true)
           # Clear
           else
+            bytecode.slice!(i,2)
             bytecode[i] = clear
-            bytecode.slice!(i.succ,2)
           end
           # Previous increment operation is redundant
           bytecode.delete_at(i -= 1) if i != 0 and bytecode[i.pred].first == INCREMENT
