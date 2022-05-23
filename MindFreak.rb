@@ -450,7 +450,7 @@ if $0 == __FILE__
         puts 'C Mode', 'Compiling'
         # Compile
         file_c = "#{filename}.c"
-        file_exe = "#{filename}.exe"
+        file_exe = "./#{filename}.exe"
         t = Time.now.to_f
         IO.write(file_c, MindFreak.to_c(program, tape))
         if system("gcc #{file_c} -o #{file_exe} -O2 -s")
