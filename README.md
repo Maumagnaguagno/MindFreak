@@ -105,13 +105,13 @@ The bytecode generated is an Array of Arrays and differ from the basic to the op
 
 The basic bytecode is described by the tuple ``[instruction, argument]``, in which:
 - **instruction** corresponds to the byte value of each instruction char used in BrainFuck;
-- **argument** corresponds to the amount of times this instruction is used or the index to jump in case of ``[`` or ``]``.
+- **argument** corresponds to the amount of times this instruction is used or the index to jump in case of <kbd>[</kbd> or <kbd>]</kbd>.
 
-The extended bytecode adds a multiply instruction, defined by ``*`` and more information to each bytecode.
+The extended bytecode adds a multiply instruction, defined by <kbd>*</kbd>, and more information to each bytecode.
 It is described by the tuple ``[instruction, argument, offset, assign, multiplier]``, in which:
 - **offset** is added to the current pointer;
-- **assign** a cell value when used by ``+`` or ``*``;
-- **multiplier** multiplies a cell value when used by ``*``, copy values with ``1``.
+- **assign** a cell value when used by <kbd>+</kbd> or <kbd>*</kbd>;
+- **multiplier** multiplies a cell value when used by <kbd>*</kbd>, copy values with ``1``.
 
 The [tests](tests/rorschach.rb) include several examples and can be used as a guide.
 
