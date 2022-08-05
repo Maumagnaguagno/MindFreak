@@ -53,7 +53,7 @@ module MindFreak
     program_size = program.size
     program_counter = -1
     @pointer = 0
-    # Intepreter
+    # Interpreter
     until (program_counter += 1) == program_size
       case program[program_counter]
       when ?+ # Increment
