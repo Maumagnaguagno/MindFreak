@@ -203,7 +203,7 @@ module MindFreak
         if looped
           code << "#{indent}tape[pointer+#{offset ? offset + arg : arg}] #{'+' unless assign}= tape[pointer#{"+#{offset}" if offset}]#{" * #{multiplier}" if multiplier != 1}"
         else
-          code << "#{indent}tape[#{offset ? offset + pointer + arg : pointer + arg}] #{'+' unless assign}= tape[#{offset ? offset + pointer : pointer}]#{" * #{multiplier}" if multiplier != 1}"
+          code << "#{indent}tape[#{pointer + (offset ? offset + arg : arg)}] #{'+' unless assign}= tape[#{offset ? offset + pointer : pointer}]#{" * #{multiplier}" if multiplier != 1}"
         end
       else raise "Unknown bytecode: #{c}"
       end
