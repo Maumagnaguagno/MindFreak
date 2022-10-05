@@ -64,7 +64,7 @@ In bold what is supported by this project:
 - Unknown instructions (**ignore**, halt, extended instructions)
 
 ### Support
-- Bounded (fast Array) ou unbounded (slow Hash) tape
+- Bounded (fast Array) or unbounded (slow Hash) tape
 - Ignore comments and check brackets before execution
 - Interpreter mode, apply instructions as user provided
 - Bytecode mode (cluster repeated instructions to achieve speed-up)
