@@ -64,7 +64,7 @@ In bold what is supported by this project:
 - Unknown instructions (**ignore**, halt, extended instructions)
 
 ### Support
-- Bounded (fast Array) ou unbounded (slow Hash) tape
+- Bounded (fast Array) or unbounded (slow Hash) tape
 - Ignore comments and check brackets before execution
 - Interpreter mode, apply instructions as user provided
 - Bytecode mode (cluster repeated instructions to achieve speed-up)
@@ -119,7 +119,7 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 - Oct 2013
   - Created
   - Unbounded cell value
-  - Bounded ou unbounded tape
+  - Bounded or unbounded tape
   - Interpret +-><.,[] as commands, the rest as comments
   - Check brackets before execution
   - Output tape when interrupted
