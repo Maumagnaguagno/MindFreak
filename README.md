@@ -48,7 +48,7 @@ Optimized: tape[pointer+1] += 1;
 
 But there is [much more to be optimized](http://calmerthanyouare.org/2015/01/07/optimizing-brainfuck.html), sometimes variations and two optimizations at the same time are hard to apply.
 The solution is to apply optimizations following a certain order.
-This project contracts several operations at the first level of bytecode generation and them apply the hard optimizations, generating a more complex bytecode.
+This project contracts several operations at the first level of bytecode generation and then apply the hard optimizations, generating a more complex bytecode.
 
 [Nayuki] has even more optimizations!
 Which is awesome and sad at the same time, maybe I will never have time to implement them all.
@@ -81,7 +81,7 @@ ruby MindFreak.rb filename.bf [interpreter|bytecode|bytecode2|rb|c] [bounds]
 
 The current implementation expects the brainfuck filename, execution mode and tape bounds.
 The C mode is the fastest, it requires GCC to compile.
-The tape is bounded by default to 500 cells, make it 0 to support any size.
+The tape is bounded by default to ``500`` cells, make it ``0`` to support any size.
 An unbounded tape is slower and C mode will use the default size to allocate the tape.
 The main of this project is just an example of the API, all modes can be executed in sequence.
 
@@ -120,7 +120,7 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   - Created
   - Unbounded cell value
   - Bounded or unbounded tape
-  - Interpret +-><.,[] as commands, the rest as comments
+  - Interpret <kbd>+</kbd><kbd>-</kbd><kbd>></kbd><kbd><</kbd><kbd>.</kbd><kbd>,</kbd><kbd>[</kbd><kbd>]</kbd> as commands, the rest as comments
   - Check brackets before execution
   - Output tape when interrupted
   - Object oriented style
@@ -156,7 +156,7 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 
 ## ToDo's
 - Generate C code with non-blank initial tape
-- Support all three normal form of EOF (0, -1, unchanged)
+- Support all three normal form of EOF (``0``, ``-1``, unchanged)
 - Step-by-step/interactive mode, breakpoint
 - Add examples
 
