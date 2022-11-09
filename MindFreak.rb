@@ -461,7 +461,7 @@ if $0 == __FILE__
           puts "\nTime: #{Time.now.to_f - t}s"
           File.delete(file_c, file_exe) unless keep
         end
-      else raise 'Mode not found'
+      else abort('Mode not found')
       end
     end
   rescue Interrupt
