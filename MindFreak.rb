@@ -396,7 +396,7 @@ module MindFreak
         end
       end
     end
-    puts "Bytecode optimized to size: #{bytecode.size}" if @debug
+    puts "Optimized bytecode size: #{bytecode.size}" if @debug
     bytecode
   end
 end
@@ -461,7 +461,7 @@ if $0 == __FILE__
           puts "\nTime: #{Time.now.to_f - t}s"
           File.delete(file_c, file_exe) unless keep
         end
-      else abort('Mode not found')
+      else abort("Unknown mode: #{mode}")
       end
     end
   rescue Interrupt
