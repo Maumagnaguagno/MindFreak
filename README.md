@@ -52,7 +52,7 @@ This project contracts several operations at the first level of bytecode generat
 
 [Nayuki] has even more optimizations!
 Which is awesome and sad at the same time, maybe I will never have time to implement them all.
-Since I can output C code we can expect GCC to solve this problem for us.
+Since it can output C code we can expect GCC/Clang to solve this problem for us.
 
 ## Compatibility
 Compatibility should not be a problem for a limited instruction set, but different implementations of the limits make it complex.
@@ -80,7 +80,7 @@ ruby MindFreak.rb filename.bf [interpreter|bytecode|bytecode2|rb|c] [bounds]
 ```
 
 The current implementation expects the brainfuck filename, execution mode and tape bounds.
-The C mode is the fastest, it requires GCC to compile.
+The C mode is the fastest, it requires a compiler.
 The tape is bounded by default to ``500`` cells, make it ``0`` to support any size.
 An unbounded tape is slower and C mode will use the default size to allocate the tape.
 The main of this project is just an example of the API, all modes can be executed in sequence.
