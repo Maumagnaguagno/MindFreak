@@ -453,13 +453,14 @@ if $0 == __FILE__
         file_exe = "./#{filename}.exe"
         t = Time.now.to_f
         IO.write(file_c, MindFreak.to_c(program, tape))
-        if system("gcc #{file_c} -o #{file_exe} -O2 -s")
+        if ['gcc', 'clang'].any? {|cc| system("#{cc} #{file_c} -o #{file_exe} -O2 -s")}
           puts "Compilation time: #{Time.now.to_f - t}s"
           # Execute
           t = Time.now.to_f
           system(file_exe)
           puts "\nTime: #{Time.now.to_f - t}s"
           File.delete(file_c, file_exe) unless keep
+        else abort('C compiler not found')
         end
       else abort("Unknown mode: #{mode}")
       end

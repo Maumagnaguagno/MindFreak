@@ -783,15 +783,8 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(4115, bytecode.size)
     assert_equal(2177, MindFreak.optimize(bytecode).size)
     # Compare output
-    File.delete(file_c) if File.exist?(file_c)
     IO.write(file_c, MindFreak.to_c(program, nil, -1))
-    ['gcc', 'clang'].each {|compiler|
-      if system("#{compiler} -v")
-        File.delete(file_exe) if File.exist?(file_exe)
-        system("#{compiler} #{file_c} -o #{file_exe} -O2 -s")
-        assert_equal(MANDELBROT, `./#{file_exe}`)
-      end
-    }
+    ['gcc', 'clang'].each {|cc| assert_equal(MANDELBROT, `./#{file_exe}`) if system("#{cc} #{file_c} -o #{file_exe} -O2 -s")}
   ensure
     File.delete(file_c) if File.exist?(file_c)
     File.delete(file_exe) if File.exist?(file_exe)
