@@ -49,7 +49,7 @@ module MindFreak
   # Run interpreter
   #-----------------------------------------------
 
-  def run_interpreter(program, tape)
+  def run_interpreter(program, tape, eof = 0)
     program_size = program.size
     program_counter = -1
     @pointer = 0
@@ -67,7 +67,7 @@ module MindFreak
       when ?. # Write
         @output.putc(tape[@pointer])
       when ?, # Read
-        tape[@pointer] = @input.getbyte.to_i
+        tape[@pointer] = @input.getbyte || eof
       when ?[ # Jump if zero
         if tape[@pointer].zero?
           control = 1
@@ -97,7 +97,7 @@ module MindFreak
   # Run bytecode
   #-----------------------------------------------
 
-  def run_bytecode(program, tape)
+  def run_bytecode(program, tape, eof = 0)
     # Bytecode interpreter does not support optimizations
     bytecode = bytecode(program)
     program_size = bytecode.size
@@ -115,7 +115,7 @@ module MindFreak
         arg > 1 ? @output.print(tape[@pointer].chr * arg) : @output.putc(tape[@pointer])
       when READ # Read
         @input.pos += arg - 1
-        tape[@pointer] = @input.getbyte.to_i
+        tape[@pointer] = @input.getbyte || eof
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer].zero?
       when JUMPBACK # Return unless zero
@@ -129,7 +129,7 @@ module MindFreak
   # Run bytecode2
   #-----------------------------------------------
 
-  def run_bytecode2(program, tape)
+  def run_bytecode2(program, tape, eof = 0)
     # Bytecode2 interpreter support optimizations
     bytecode = optimize(bytecode(program), tape[0] == 0)
     program_size = bytecode.size
@@ -152,7 +152,7 @@ module MindFreak
         arg > 1 ? @output.print(c.chr * arg) : @output.putc(c)
       when READ # Read
         @input.pos += arg - 1
-        tape[offset ? offset + @pointer : @pointer] = @input.getbyte.to_i
+        tape[offset ? offset + @pointer : @pointer] = @input.getbyte || eof
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer].zero?
       when JUMPBACK # Return unless zero
@@ -173,7 +173,7 @@ module MindFreak
   # to Ruby
   #-----------------------------------------------
 
-  def to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')
+  def to_ruby(program, tape = nil, eof = 0, input = 'STDIN', output = 'STDOUT')
     # Tape definition
     code = tape.instance_of?(Array) || tape.instance_of?(Hash) ? '' : tape == 0 ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape || TAPE_DEFAULT_SIZE},0)\npointer = 0"
     indent = "\n"
@@ -191,7 +191,7 @@ module MindFreak
         code << "#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
       when READ # Read
         code << "#{indent}#{input}.pos += #{arg - 1}" if arg > 1
-        code << "#{indent}tape[#{looped ? "pointer#{"+#{offset}" if offset}" : offset ? offset + pointer : pointer}] = #{input}.getbyte.to_i"
+        code << "#{indent}tape[#{looped ? "pointer#{"+#{offset}" if offset}" : offset ? offset + pointer : pointer}] = #{input}.getbyte || #{eof}"
       when JUMP # Jump if zero
         looped = true
         code << "#{indent}until tape[pointer].zero?"

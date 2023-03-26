@@ -62,6 +62,7 @@ In bold what is supported by this project:
 - How the input happens (**IO object**, **read from terminal**)
 - How the output happens (**IO object**, **write to terminal**)
 - Unknown instructions (**ignore**, halt, extended instructions)
+- EOF (**any integer**, unchanged)
 
 ### Support
 - Bounded (fast Array) or unbounded (slow Hash) tape
@@ -71,7 +72,7 @@ In bold what is supported by this project:
 - Bytecode2 mode (uses optimized bytecode to achieve even more speed-up)
 - Ruby mode (transform optimized bytecode to ruby and eval to get even more speed)
 - C mode works like Ruby mode with fixed size tape and cells
-- C mode can deal with input EOF as ``0`` (default, as other modes) or ``-1`` (as in C, faster)
+- Custom EOF, ``0`` is the default (C is faster with ``-1``)
 - Output tape when interrupted (except C mode)
 
 ## Execution
@@ -95,10 +96,10 @@ The main of this project is just an example of the API, all modes can be execute
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
 - ``check(program)`` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns ``nil``.
-- ``run_interpreter(program, tape)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
-- ``run_bytecode(program, tape)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
-- ``run_bytecode2(program, tape)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
-- ``to_ruby(program, tape = nil, input = 'STDIN', output = 'STDOUT')`` returns a string with a Ruby equivalent to the program provided. If tape is Array or Hash the string will not contain tape and pointer declaration so ``eval`` will use external variables, otherwise tape is used as size to tape declaration.
+- ``run_interpreter(program, tape, eof = 0)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
+- ``run_bytecode(program, tape, eof = 0)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ``run_bytecode2(program, tape, eof = 0)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ``to_ruby(program, tape = nil, eof = 0, input = 'STDIN', output = 'STDOUT')`` returns a string with a Ruby equivalent to the program provided. If tape is Array or Hash the string will not contain tape and pointer declaration so ``eval`` will use external variables, otherwise tape is used as size to tape declaration.
 - ``to_c(program, tape = nil, eof = 0, type = 'unsigned int')`` returns a string with a C equivalent to the program provided. The type contains the cell type being used. If no tape is provided the default tape size is used.
 - ``bytecode(program)`` returns an Array with the bytecodes.
 - ``optimize(bytecode, blank_tape = false)`` returns an Array with the optimized bytecodes, which can be further optimized if the tape is blank.
@@ -156,7 +157,7 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 
 ## ToDo's
 - Generate C code with non-blank initial tape
-- Support all three normal form of EOF (``0``, ``-1``, unchanged)
+- Support unchanged cell by EOF
 - Step-by-step/interactive mode, breakpoint
 - Add examples
 

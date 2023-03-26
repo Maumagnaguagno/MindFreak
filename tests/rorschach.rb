@@ -83,13 +83,17 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_run_interpreter_io_read_eof
+    # Consider any integer as EOF
     program = ','
     tape = [0]
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
-    # Expected to raise an exception
     MindFreak.run_interpreter(program, tape)
     assert_equal([0], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
+    MindFreak.run_interpreter(program, tape, 255)
+    assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
   end
@@ -135,13 +139,17 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_run_bytecode_io_read_eof
+    # Consider any integer as EOF
     program = ','
     tape = [0]
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
-    # Expected to raise an exception
     MindFreak.run_bytecode(program, tape)
     assert_equal([0], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
+    MindFreak.run_bytecode(program, tape, 255)
+    assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
   end
@@ -187,13 +195,17 @@ class Rorschach < Test::Unit::TestCase
   end
 
   def test_run_bytecode2_io_read_eof
+    # Consider any integer as EOF
     program = ','
     tape = [0]
     MindFreak.input = StringIO.new
     assert_nil(MindFreak.check(program))
-    # Expected to raise an exception
     MindFreak.run_bytecode2(program, tape)
     assert_equal([0], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
+    MindFreak.run_bytecode2(program, tape, 255)
+    assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
   end
@@ -238,11 +250,29 @@ class Rorschach < Test::Unit::TestCase
     pointer = 0
     assert_nil(MindFreak.check(program))
     # Connect input and output local variables
-    eval(MindFreak.to_ruby(program, tape, 'input', 'output'))
+    eval(MindFreak.to_ruby(program, tape, 0, 'input', 'output'))
     assert_equal([111, 33], tape)
     assert_equal(0, pointer)
     assert_equal('  Helo', input.string)
     assert_equal('Hello!', output.string)
+  end
+
+  def test_eval_ruby_io_read_eof
+    # Consider any integer as EOF
+    input = StringIO.new
+    program = ','
+    tape = [0]
+    # Ruby evaluation mode requires local pointer
+    pointer = 0
+    assert_nil(MindFreak.check(program))
+    eval(MindFreak.to_ruby(program, tape, 0, 'input'))
+    assert_equal([0], tape)
+    assert_equal(0, pointer)
+    assert_equal('', input.string)
+    eval(MindFreak.to_ruby(program, tape, 255, 'input'))
+    assert_equal([255], tape)
+    assert_equal(0, pointer)
+    assert_equal('', input.string)
   end
 
   #-----------------------------------------------
@@ -297,12 +327,12 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte.to_i",
+      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || 0",
       MindFreak.to_ruby(program, 0)
     )
     # Array tape
     assert_equal(
-      "\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte.to_i",
+      "\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || 0",
       MindFreak.to_ruby(program, [0])
     )
   end
@@ -310,7 +340,7 @@ class Rorschach < Test::Unit::TestCase
   def test_to_ruby_infinite_loop
     program = '[]'
     assert_nil(MindFreak.check(program))
-    # Hash
+    # Hash tape
     assert_equal(
       "tape = Hash.new(0)\npointer = 0",
       MindFreak.to_ruby(program, 0)
@@ -319,7 +349,7 @@ class Rorschach < Test::Unit::TestCase
       "\nuntil tape[pointer].zero?\nend",
       MindFreak.to_ruby(program, {})
     )
-    # Array
+    # Array tape
     assert_equal(
       "tape = Array.new(5,0)\npointer = 0",
       MindFreak.to_ruby(program, 5)
