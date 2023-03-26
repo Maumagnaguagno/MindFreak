@@ -297,12 +297,12 @@ class Rorschach < Test::Unit::TestCase
     assert_nil(MindFreak.check(program))
     # Hash tape
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nSTDIN.read(4)\ntape[0] = STDIN.getbyte.to_i",
+      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte.to_i",
       MindFreak.to_ruby(program, 0)
     )
     # Array tape
     assert_equal(
-      "\nSTDIN.read(4)\ntape[0] = STDIN.getbyte.to_i",
+      "\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte.to_i",
       MindFreak.to_ruby(program, [0])
     )
   end
