@@ -807,13 +807,13 @@ class Rorschach < Test::Unit::TestCase
     file_c = "#{filename}.c"
     file_exe = "#{filename}.exe"
     # Check bytecode size
-    program = IO.read(filename)
+    program = File.read(filename)
     assert_nil(MindFreak.check(program))
     bytecode = MindFreak.bytecode(program)
     assert_equal(4115, bytecode.size)
     assert_equal(2177, MindFreak.optimize(bytecode).size)
     # Compare output
-    IO.write(file_c, MindFreak.to_c(program, nil, -1))
+    File.write(file_c, MindFreak.to_c(program, nil, -1))
     ['gcc', 'clang'].each {|cc| assert_equal(MANDELBROT, `./#{file_exe}`) if system("#{cc} #{file_c} -o #{file_exe} -O2 -s")}
   ensure
     File.delete(file_c) if File.exist?(file_c)

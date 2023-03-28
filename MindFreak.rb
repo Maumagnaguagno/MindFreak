@@ -417,7 +417,7 @@ if $0 == __FILE__
       bounds = ARGV[2] ? ARGV[2].to_i : MindFreak::TAPE_DEFAULT_SIZE
       tape = bounds > 0 ? Array.new(bounds, 0) : Hash.new(0)
       # Setup
-      program = IO.read(filename)
+      program = File.read(filename)
       MindFreak.check(program)
       MindFreak.debug = true
       # Keep source and executables
@@ -445,14 +445,14 @@ if $0 == __FILE__
         pointer = 0
         eval(code = MindFreak.to_ruby(program, tape))
         puts "\nTime: #{Time.now.to_f - t}s"
-        IO.write("#{filename}.rb", code) if keep
+        File.write("#{filename}.rb", code) if keep
       when 'c'
         puts 'C Mode', 'Compiling'
         # Compile
         file_c = "#{filename}.c"
         file_exe = "./#{filename}.exe"
         t = Time.now.to_f
-        IO.write(file_c, MindFreak.to_c(program, tape))
+        File.write(file_c, MindFreak.to_c(program, tape))
         if ['gcc', 'clang'].any? {|cc| system("#{cc} #{file_c} -o #{file_exe} -O2 -s")}
           puts "Compilation time: #{Time.now.to_f - t}s"
           # Execute
