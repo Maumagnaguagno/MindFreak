@@ -55,37 +55,33 @@ module MindFreak
     @pointer = 0
     # Interpreter
     until (program_counter += 1) == program_size
-      case program[program_counter]
-      when ?+ # Increment
+      case program.getbyte(program_counter)
+      when INCREMENT
         tape[@pointer] += 1
-      when ?- # Decrement
+      when DECREMENT
         tape[@pointer] -= 1
-      when ?> # Forward
+      when FORWARD
         @pointer += 1
-      when ?< # Backward
+      when BACKWARD
         @pointer -= 1
-      when ?. # Write
+      when WRITE
         @output.putc(tape[@pointer])
-      when ?, # Read
+      when READ
         tape[@pointer] = @input.getbyte || eof
-      when ?[ # Jump if zero
-        if tape[@pointer].zero?
+      when JUMP
+        if tape[@pointer] == 0
           control = 1
-          until control.zero?
-            case program[program_counter += 1]
-            when ?[ then control += 1
-            when ?] then control -= 1
-            end
+          until control == 0
+            b = program.getbyte(program_counter += 1)
+            control += 92 - b if b >= JUMP
           end
         end
-      when ?] # Return unless zero
-        unless tape[@pointer].zero?
+      when JUMPBACK
+        if tape[@pointer] != 0
           control = -1
-          until control.zero?
-            case program[program_counter -= 1]
-            when ?[ then control += 1
-            when ?] then control -= 1
-            end
+          until control == 0
+            b = program.getbyte(program_counter -= 1)
+            control += 92 - b if b >= JUMP
           end
         end
       else raise "Unknown instruction: #{program[program_counter]} at position #{program_counter}"
