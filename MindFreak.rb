@@ -71,17 +71,13 @@ module MindFreak
       when JUMP
         if tape[@pointer] == 0
           control = 1
-          until control == 0
-            b = program.getbyte(program_counter += 1)
-            control += 92 - b if b >= JUMP
+          until (b = program.getbyte(program_counter += 1)) >= JUMP and (control += 92 - b) == 0
           end
         end
       when JUMPBACK
         if tape[@pointer] != 0
           control = -1
-          until control == 0
-            b = program.getbyte(program_counter -= 1)
-            control += 92 - b if b >= JUMP
+          until (b = program.getbyte(program_counter -= 1)) >= JUMP and (control += 92 - b) == 0
           end
         end
       else raise "Unknown instruction: #{program[program_counter]} at position #{program_counter}"
