@@ -77,10 +77,10 @@ In bold what is supported by this project:
 
 ## Execution
 ```
-ruby MindFreak.rb filename.bf [interpreter|bytecode|bytecode2|rb|c] [bounds]
+ruby MindFreak.rb filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=500] [EOF=0]
 ```
 
-The current implementation expects the brainfuck filename, execution mode and tape bounds.
+The current implementation expects a program filename, execution mode, tape bounds and EOF value.
 The C mode is the fastest, it requires a compiler.
 The tape is bounded by default to ``500`` cells, make it ``0`` to support any size.
 An unbounded tape is slower and C mode will use the default size to allocate the tape.
@@ -154,6 +154,18 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   - Optimize read/write instructions
 - Dec 2020
   - Fix jump index bytecode
+- Mar 2021
+  - Fix multiply followed by clear
+  - Dead code elimination
+  - Ruby tape
+- Nov 2022
+  - Clang tests
+- Feb 2023
+  - Support GCC and Clang
+- Mar 2023
+  - Optimize consecutive read
+  - Optimize interpreter
+  - Custom EOF
 
 ## ToDo's
 - Generate C code with non-blank initial tape

@@ -13,7 +13,7 @@ module MindFreak
   attr_reader :pointer
   attr_accessor :input, :output, :debug
 
-  HELP = "MindFreak filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}]"
+  HELP = "MindFreak filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}] [EOF=0]"
 
   INCREMENT = ?+.ord
   DECREMENT = ?-.ord
@@ -401,12 +401,12 @@ if $0 == __FILE__
     if ARGV.empty? or ARGV.first == '-h'
       puts MindFreak::HELP
     else
-      # Input
+      # Options
       filename = ARGV[0]
       mode = ARGV[1] || 'interpreter'
-      # Tape size
       bounds = ARGV[2] ? ARGV[2].to_i : MindFreak::TAPE_DEFAULT_SIZE
       tape = bounds > 0 ? Array.new(bounds, 0) : Hash.new(0)
+      eof = ARGV[3].to_i
       # Setup
       program = File.read(filename)
       MindFreak.check(program)
@@ -418,23 +418,23 @@ if $0 == __FILE__
       when 'interpreter'
         puts 'Interpreter Mode'
         t = Time.now.to_f
-        MindFreak.run_interpreter(program, tape)
+        MindFreak.run_interpreter(program, tape, eof)
         puts "\nTime: #{Time.now.to_f - t}s", 'Tape:', tape.inspect
       when 'bytecode'
         puts 'Bytecode Mode'
         t = Time.now.to_f
-        MindFreak.run_bytecode(program, tape)
+        MindFreak.run_bytecode(program, tape, eof)
         puts "\nTime: #{Time.now.to_f - t}s", 'Tape:', tape.inspect
       when 'bytecode2'
         puts 'Bytecode2 Mode'
         t = Time.now.to_f
-        MindFreak.run_bytecode2(program, tape)
+        MindFreak.run_bytecode2(program, tape, eof)
         puts "\nTime: #{Time.now.to_f - t}s", 'Tape:', tape.inspect
       when 'rb'
         puts 'Ruby Mode'
         t = Time.now.to_f
         pointer = 0
-        eval(code = MindFreak.to_ruby(program, tape))
+        eval(code = MindFreak.to_ruby(program, tape, eof))
         puts "\nTime: #{Time.now.to_f - t}s"
         File.write("#{filename}.rb", code) if keep
       when 'c'
@@ -443,7 +443,7 @@ if $0 == __FILE__
         file_c = "#{filename}.c"
         file_exe = "./#{filename}.exe"
         t = Time.now.to_f
-        File.write(file_c, MindFreak.to_c(program, tape))
+        File.write(file_c, MindFreak.to_c(program, tape, eof))
         if ['gcc', 'clang'].any? {|cc| system("#{cc} #{file_c} -o #{file_exe} -O2 -s")}
           puts "Compilation time: #{Time.now.to_f - t}s"
           # Execute
