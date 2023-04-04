@@ -166,6 +166,8 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   - Optimize consecutive read
   - Optimize interpreter
   - Custom EOF
+- Apr 2023
+  - Dead jump elimination
 
 ## ToDo's
 - Generate C code with non-blank initial tape

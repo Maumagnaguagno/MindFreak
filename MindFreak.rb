@@ -276,17 +276,21 @@ module MindFreak
           when BACKWARD then [last = FORWARD, -1]
           else [last = c, 1]
           end
-        # Jump
         else
-          last = 0
+          # Jump
           if c == JUMP
             bytecode << [JUMP]
             jump_stack << index
+          # Dead jump
+          elsif (last = jump_stack.pop) > 0 and bytecode[last-1].first == JUMPBACK
+            bytecode.pop(index - last)
+            index = last - 1
+          # Jump program counter to index
           else
-            # Jump program counter to index, only works for bytecode
-            bytecode << [JUMPBACK, jump_stack.last]
-            bytecode[jump_stack.pop] << index
+            bytecode << [JUMPBACK, last]
+            bytecode[last] << index
           end
+          last = 0
         end
         index += 1
       end
@@ -374,7 +378,7 @@ module MindFreak
         # Remove last forward
         else bytecode.pop
         end
-      # Rebuild jump index argument, only works for bytecode
+      # Rebuild jump index argument
       when JUMP then jump_stack << i
       when JUMPBACK then bytecode[bytecode[i][1] = jump_stack.pop][1] = i
       # Multiplication assignment
