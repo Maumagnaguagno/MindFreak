@@ -225,7 +225,7 @@ module MindFreak
         c = "putchar(*(pointer#{"+#{offset}" if offset}));"
         code << "#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
       when READ # Read
-        code << "#{indent}for(unsigned int i = #{arg.pred}; i; --i) getchar();" if arg > 1
+        code << "#{indent}for(unsigned int i = #{arg-1}; i; --i) getchar();" if arg > 1
         if eof == -1
           code << "#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
         else
@@ -311,7 +311,7 @@ module MindFreak
       case bytecode[i].first
       # Clear [-] [+] or Assign [-]+ [+]-
       when JUMP
-        if bytecode[i.succ].first == INCREMENT and bytecode[i+2].first == JUMPBACK
+        if bytecode[i+1].first == INCREMENT and bytecode[i+2].first == JUMPBACK
           # Assign
           if bytecode[i+3] and bytecode[i+3].first == INCREMENT
             bytecode.slice!(i,3)
@@ -322,7 +322,7 @@ module MindFreak
             bytecode[i] = clear
           end
           # Previous increment operation is redundant
-          bytecode.delete_at(i -= 1) if i != 0 and bytecode[i.pred].first == INCREMENT
+          bytecode.delete_at(i -= 1) if i != 0 and bytecode[i-1].first == INCREMENT
         else start = i
         end
       # Multiplication [->+<]
@@ -330,7 +330,7 @@ module MindFreak
         next unless start
         # Extract data
         pointer = 0
-        start.succ.upto(i.pred) {|k|
+        (start+1).upto(i-1) {|k|
           if (k = bytecode[k]).first == FORWARD
             pointer += k[1]
           elsif k.first == INCREMENT and not k[3]
@@ -359,7 +359,7 @@ module MindFreak
       case bytecode[i].first
       # Offset >+< <.>
       when FORWARD
-        if next_inst = bytecode[i.succ]
+        if next_inst = bytecode[i+1]
           if next_inst.first < JUMP
             # Original instruction uses offset
             offset = bytecode[i]
@@ -367,9 +367,9 @@ module MindFreak
             # Push offset to next forward if they do not nullify
             if bytecode[i+2] and bytecode[i+2].first == FORWARD
               bytecode.delete_at(i+2) if (bytecode[i+2][1] += offset[1]) == 0
-              bytecode.delete_at(i.succ)
+              bytecode.delete_at(i+1)
             # Swap forward with original instruction
-            else bytecode[i.succ] = offset
+            else bytecode[i+1] = offset
             end
             i -= 1 if next_inst.first == MULTIPLY
           end
@@ -381,7 +381,7 @@ module MindFreak
       when JUMPBACK then bytecode[bytecode[i][1] = jump_stack.pop][1] = i
       # Multiplication assignment
       when MULTIPLY
-        if i > 0 and (a = bytecode[i.pred]).first == INCREMENT and a[1] == 0 and a[3] and a[2] == (b = bytecode[i])[1] + b[2].to_i
+        if i > 0 and (a = bytecode[i-1]).first == INCREMENT and a[1] == 0 and a[3] and a[2] == (b = bytecode[i])[1] + b[2].to_i
           b[3] = true
           bytecode.delete_at(i -= 1)
         end
