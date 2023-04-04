@@ -346,7 +346,7 @@ class Rorschach < Test::Unit::TestCase
       MindFreak.to_ruby(program, 0)
     )
     assert_equal(
-      "\nuntil tape[pointer].zero?\nend",
+      "\nwhile tape[pointer] != 0\nend",
       MindFreak.to_ruby(program, {})
     )
     # Array tape
@@ -356,7 +356,7 @@ class Rorschach < Test::Unit::TestCase
     )
     assert_equal('', MindFreak.to_ruby(program, [0]))
     assert_equal(
-      "\nuntil tape[pointer].zero?\nend",
+      "\nwhile tape[pointer] != 0\nend",
       MindFreak.to_ruby(program, [])
     )
   end

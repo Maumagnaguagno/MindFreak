@@ -42,7 +42,7 @@ module MindFreak
       elsif c == JUMPBACK and (control -= 1) < 0 then raise 'Unexpected ] found'
       end
     }
-    raise 'Expected ]' unless control.zero?
+    raise 'Expected ]' if control != 0
   end
 
   #-----------------------------------------------
@@ -109,9 +109,9 @@ module MindFreak
         @input.pos += arg - 1
         tape[@pointer] = @input.getbyte || eof
       when JUMP # Jump if zero
-        program_counter = arg if tape[@pointer].zero?
+        program_counter = arg if tape[@pointer] == 0
       when JUMPBACK # Return unless zero
-        program_counter = arg unless tape[@pointer].zero?
+        program_counter = arg if tape[@pointer] != 0
       else raise "Unknown bytecode: #{c} at position #{program_counter}"
       end
     end
@@ -146,9 +146,9 @@ module MindFreak
         @input.pos += arg - 1
         tape[offset ? offset + @pointer : @pointer] = @input.getbyte || eof
       when JUMP # Jump if zero
-        program_counter = arg if tape[@pointer].zero?
+        program_counter = arg if tape[@pointer] == 0
       when JUMPBACK # Return unless zero
-        program_counter = arg unless tape[@pointer].zero?
+        program_counter = arg if tape[@pointer] != 0
       when MULTIPLY # Multiplication
         offset = offset ? offset + @pointer : @pointer
         if assign
@@ -185,7 +185,7 @@ module MindFreak
         code << "#{indent}tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] = #{input}.getbyte || #{eof}"
       when JUMP # Jump if zero
         pointer = nil
-        code << "#{indent}until tape[pointer].zero?"
+        code << "#{indent}while tape[pointer] != 0"
         indent << '  '
       when JUMPBACK # Return unless zero
         indent.slice!(-2,2)
@@ -207,7 +207,7 @@ module MindFreak
   #-----------------------------------------------
 
   def to_c(program, tape = nil, eof = 0, type = 'unsigned int')
-    if not tape or (tape_size = tape.size).zero?
+    if not tape or (tape_size = tape.size) == 0
       tape_size = TAPE_DEFAULT_SIZE
       puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
     end
@@ -258,14 +258,14 @@ module MindFreak
     program.each_byte {|c|
       # Repeated instruction
       if c == last
-        if (bytecode.last[1] += 1).zero?
+        if (bytecode.last[1] += 1) == 0
           bytecode.pop
           last = bytecode.last && bytecode.last.first < JUMP ? bytecode.last.first : 0
           index -= 1
         end
       # Disguised repeated instruction
       elsif (c == DECREMENT and last == INCREMENT) or (c == BACKWARD and last == FORWARD)
-        if (bytecode.last[1] -= 1).zero?
+        if (bytecode.last[1] -= 1) == 0
           bytecode.pop
           last = bytecode.last && bytecode.last.first < JUMP ? bytecode.last.first : 0
           index -= 1
@@ -366,7 +366,7 @@ module MindFreak
             (bytecode[i] = next_inst.equal?(clear) ? clear.dup : next_inst)[2] = offset[1]
             # Push offset to next forward if they do not nullify
             if bytecode[i+2] and bytecode[i+2].first == FORWARD
-              bytecode.delete_at(i+2) if (bytecode[i+2][1] += offset[1]).zero?
+              bytecode.delete_at(i+2) if (bytecode[i+2][1] += offset[1]) == 0
               bytecode.delete_at(i.succ)
             # Swap forward with original instruction
             else bytecode[i.succ] = offset
@@ -381,7 +381,7 @@ module MindFreak
       when JUMPBACK then bytecode[bytecode[i][1] = jump_stack.pop][1] = i
       # Multiplication assignment
       when MULTIPLY
-        if i > 0 and (a = bytecode[i.pred]).first == INCREMENT and a[1].zero? and a[3] and a[2] == (b = bytecode[i])[1] + b[2].to_i
+        if i > 0 and (a = bytecode[i.pred]).first == INCREMENT and a[1] == 0 and a[3] and a[2] == (b = bytecode[i])[1] + b[2].to_i
           b[3] = true
           bytecode.delete_at(i -= 1)
         end
