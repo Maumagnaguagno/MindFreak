@@ -204,16 +204,23 @@ module MindFreak
   # to C
   #-----------------------------------------------
 
-  def to_c(program, tape = nil, eof = 0, type = 'unsigned int')
-    if not tape or (tape_size = tape.size) == 0
-      tape_size = TAPE_DEFAULT_SIZE
-      puts "C mode requires a bounded tape, using #{tape_size} cells" if @debug
+  def to_c(program, tape = TAPE_DEFAULT_SIZE, eof = 0, type = 'unsigned int')
+    case tape
+    when Integer
+      tape_str = '0'
+      tape_size = tape
+      tape = [0]
+    when Array
+      tape_str = tape.join(', ')
+      tape_size = tape.size
+    else tape_size = 0
     end
+    raise 'C mode expects a non-empty bounded tape' if tape_size == 0
     eof_variable = nil
     code = ''
     indent = "\n  "
     # Match bytecode
-    optimize(bytecode(program), tape && tape[0] == 0).each {|c,arg,offset,assign,multiplier|
+    optimize(bytecode(program), tape[0] == 0).each {|c,arg,offset,assign,multiplier|
       case c
       when INCREMENT # Tape
         code << "#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless assign}= #{arg};"
@@ -241,7 +248,7 @@ module MindFreak
       else raise "Unknown bytecode: #{c}"
       end
     }
-    "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {0}, *pointer = tape;#{eof_variable}#{code}\n  return 0;\n}"
+    "#include <stdio.h>\nint main(){\n  #{type} tape[#{tape_size}] = {#{tape_str}}, *pointer = tape;#{eof_variable}#{code}\n  return 0;\n}"
   end
 
   #-----------------------------------------------
