@@ -37,11 +37,7 @@ module MindFreak
     # Remove comments and verify balanced brackets
     control = 0
     program.delete!('^-+><.,[]')
-    program.each_byte {|c|
-      if c == JUMP then control += 1
-      elsif c == JUMPBACK and (control -= 1) < 0 then raise 'Unexpected ] found'
-      end
-    }
+    program.each_byte {|b| raise 'Unexpected ] found' if b >= JUMP and (control += 92 - b) < 0}
     raise 'Expected ]' if control != 0
   end
 
