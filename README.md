@@ -106,7 +106,7 @@ The bytecode generated is an Array of Arrays and differ from the basic to the op
 
 The basic bytecode is described by the tuple ``[instruction, argument]``, in which:
 - **instruction** corresponds to the byte value of each instruction char used in BrainFuck;
-- **argument** corresponds to the amount of times this instruction is used or the index to jump in case of <kbd>[</kbd> or <kbd>]</kbd>.
+- **argument** corresponds to the amount of times this instruction is used or the jump index in case of <kbd>[</kbd> or <kbd>]</kbd>.
 
 The extended bytecode adds a multiply instruction, defined by <kbd>*</kbd>, and more information to each bytecode.
 It is described by the tuple ``[instruction, argument, offset, assign, multiplier]``, in which:
