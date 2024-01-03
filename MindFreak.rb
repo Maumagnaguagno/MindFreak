@@ -100,7 +100,7 @@ module MindFreak
       when WRITE # Write
         arg > 1 ? @output.print(tape[@pointer].chr * arg) : @output.putc(tape[@pointer])
       when READ # Read
-        @input.pos += arg - 1
+        @input.read(arg - 1)
         tape[@pointer] = @input.getbyte || eof || next
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer] == 0
@@ -137,7 +137,7 @@ module MindFreak
         c = tape[offset ? offset + @pointer : @pointer]
         arg > 1 ? @output.print(c.chr * arg) : @output.putc(c)
       when READ # Read
-        @input.pos += arg - 1
+        @input.read(arg - 1)
         tape[offset ? offset + @pointer : @pointer] = @input.getbyte || eof || next
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer] == 0
@@ -175,7 +175,7 @@ module MindFreak
         c = "tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}]"
         code << "#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
       when READ # Read
-        code << "#{indent}#{input}.pos += #{arg - 1}" if arg > 1
+        code << "#{indent}#{input}.read(#{arg - 1})" if arg > 1
         if eof
           code << "#{indent}tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] = #{input}.getbyte || #{eof}"
         else

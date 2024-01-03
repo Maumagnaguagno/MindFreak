@@ -341,30 +341,33 @@ class Rorschach < Test::Unit::TestCase
   def test_to_ruby_read_consecutive
     program = ',,,,,'
     assert_nil(MindFreak.check(program))
+    eof_zero = "\nSTDIN.read(4)\ntape[0] = STDIN.getbyte || 0"
+    eof_minus_one = "\nSTDIN.read(4)\ntape[0] = STDIN.getbyte || -1"
+    eof_unchanged = "\nSTDIN.read(4)\nc = STDIN.getbyte and tape[0] = c"
     # Hash tape
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || 0",
+      "tape = Hash.new(0)\npointer = 0" << eof_zero,
       MindFreak.to_ruby(program, 0)
     )
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || -1",
+      "tape = Hash.new(0)\npointer = 0" << eof_minus_one,
       MindFreak.to_ruby(program, 0, -1)
     )
     assert_equal(
-      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\nc = STDIN.getbyte and tape[0] = c",
+      "tape = Hash.new(0)\npointer = 0" << eof_unchanged,
       MindFreak.to_ruby(program, 0, nil)
     )
     # Array tape
     assert_equal(
-      "\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || 0",
+      eof_zero,
       MindFreak.to_ruby(program, [0])
     )
     assert_equal(
-      "\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || -1",
+      eof_minus_one,
       MindFreak.to_ruby(program, [0], -1)
     )
     assert_equal(
-      "\nSTDIN.pos += 4\nc = STDIN.getbyte and tape[0] = c",
+      eof_unchanged,
       MindFreak.to_ruby(program, [0], nil)
     )
   end

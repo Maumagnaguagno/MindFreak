@@ -89,7 +89,7 @@ The main of this project is just an example of the API, all modes can be execute
 ## API
 [**MindFreak**](MindFreak.rb) is a module with 4 attributes:
 - ``attr_reader :pointer``, with the position of the current cell for interpreted execution modes, ``nil`` is the default.
-- ``attr_accessor :input``, read external data from an object that responds to ``getbyte`` and ``pos``, ``STDIN`` is the default.
+- ``attr_accessor :input``, read external data from an object that responds to ``getbyte`` and ``read``, ``STDIN`` is the default.
 - ``attr_accessor :output``, write external data to an object that responds to ``putc`` and ``print``, ``STDOUT`` is the default.
 - ``attr_accessor :debug``, print warnings when assigned to anything but ``false`` or ``nil``, ``nil`` is the default.
 
@@ -163,7 +163,6 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 - Feb 2023
   - Support GCC and Clang
 - Mar 2023
-  - Optimize consecutive read
   - Optimize interpreter
   - Custom EOF
 - Apr 2023
