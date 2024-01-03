@@ -13,7 +13,7 @@ module MindFreak
   attr_reader :pointer
   attr_accessor :input, :output, :debug
 
-  HELP = "MindFreak filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}] [EOF=0]"
+  HELP = "MindFreak filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}] [EOF=0|-1|any integer|unchanged]"
 
   INCREMENT = ?+.ord
   DECREMENT = ?-.ord
@@ -63,7 +63,7 @@ module MindFreak
       when WRITE
         @output.putc(tape[@pointer])
       when READ
-        tape[@pointer] = @input.getbyte || eof
+        tape[@pointer] = @input.getbyte || eof || next
       when JUMP
         if tape[@pointer] == 0
           control = 1
@@ -101,7 +101,7 @@ module MindFreak
         arg > 1 ? @output.print(tape[@pointer].chr * arg) : @output.putc(tape[@pointer])
       when READ # Read
         @input.pos += arg - 1
-        tape[@pointer] = @input.getbyte || eof
+        tape[@pointer] = @input.getbyte || eof || next
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer] == 0
       when JUMPBACK # Return unless zero
@@ -138,7 +138,7 @@ module MindFreak
         arg > 1 ? @output.print(c.chr * arg) : @output.putc(c)
       when READ # Read
         @input.pos += arg - 1
-        tape[offset ? offset + @pointer : @pointer] = @input.getbyte || eof
+        tape[offset ? offset + @pointer : @pointer] = @input.getbyte || eof || next
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer] == 0
       when JUMPBACK # Return unless zero
@@ -176,7 +176,11 @@ module MindFreak
         code << "#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
       when READ # Read
         code << "#{indent}#{input}.pos += #{arg - 1}" if arg > 1
-        code << "#{indent}tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] = #{input}.getbyte || #{eof}"
+        if eof
+          code << "#{indent}tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] = #{input}.getbyte || #{eof}"
+        else
+          code << "#{indent}c = #{input}.getbyte and tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] = c"
+        end
       when JUMP # Jump if zero
         pointer = nil
         code << "#{indent}while tape[pointer] != 0"
@@ -227,7 +231,11 @@ module MindFreak
         code << "#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
       when READ # Read
         code << "#{indent}for(unsigned int i = #{arg-1}; i; --i) getchar();" if arg > 1
-        if eof == -1
+        case eof
+        when nil
+          code << "#{indent}c = getchar();#{indent}if(c != EOF) (*(pointer#{"+#{offset}" if offset})) = c;"
+          eof_variable ||= "\n  int c;"
+        when -1
           code << "#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
         else
           code << "#{indent}c = getchar();#{indent}(*(pointer#{"+#{offset}" if offset})) = c == EOF ? #{eof} : c;"
@@ -411,7 +419,7 @@ if $0 == __FILE__
       mode = ARGV[1] || 'interpreter'
       bounds = ARGV[2] ? ARGV[2].to_i : MindFreak::TAPE_DEFAULT_SIZE
       tape = bounds > 0 ? Array.new(bounds, 0) : Hash.new(0)
-      eof = ARGV[3].to_i
+      eof = ARGV[3].to_i if ARGV[3] != 'unchanged'
       # Setup
       program = File.read(filename)
       MindFreak.check(program)

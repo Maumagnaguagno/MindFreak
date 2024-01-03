@@ -96,6 +96,10 @@ class Rorschach < Test::Unit::TestCase
     assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
+    MindFreak.run_interpreter(program, tape = [], nil)
+    assert_equal([], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
   end
 
   #-----------------------------------------------
@@ -152,6 +156,10 @@ class Rorschach < Test::Unit::TestCase
     assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
+    MindFreak.run_bytecode(program, tape = [], nil)
+    assert_equal([], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
   end
 
   #-----------------------------------------------
@@ -206,6 +214,10 @@ class Rorschach < Test::Unit::TestCase
     assert_equal('', MindFreak.input.string)
     MindFreak.run_bytecode2(program, tape, 255)
     assert_equal([255], tape)
+    assert_equal(0, MindFreak.pointer)
+    assert_equal('', MindFreak.input.string)
+    MindFreak.run_bytecode2(program, tape = [], nil)
+    assert_equal([], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', MindFreak.input.string)
   end
@@ -273,6 +285,10 @@ class Rorschach < Test::Unit::TestCase
     assert_equal([255], tape)
     assert_equal(0, pointer)
     assert_equal('', input.string)
+    eval(MindFreak.to_ruby(program, tape, nil, 'input'))
+    assert_equal([255], tape)
+    assert_equal(0, pointer)
+    assert_equal('', input.string)
   end
 
   #-----------------------------------------------
@@ -330,10 +346,26 @@ class Rorschach < Test::Unit::TestCase
       "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || 0",
       MindFreak.to_ruby(program, 0)
     )
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || -1",
+      MindFreak.to_ruby(program, 0, -1)
+    )
+    assert_equal(
+      "tape = Hash.new(0)\npointer = 0\nSTDIN.pos += 4\nc = STDIN.getbyte and tape[0] = c",
+      MindFreak.to_ruby(program, 0, nil)
+    )
     # Array tape
     assert_equal(
       "\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || 0",
       MindFreak.to_ruby(program, [0])
+    )
+    assert_equal(
+      "\nSTDIN.pos += 4\ntape[0] = STDIN.getbyte || -1",
+      MindFreak.to_ruby(program, [0], -1)
+    )
+    assert_equal(
+      "\nSTDIN.pos += 4\nc = STDIN.getbyte and tape[0] = c",
+      MindFreak.to_ruby(program, [0], nil)
     )
   end
 
@@ -404,24 +436,35 @@ class Rorschach < Test::Unit::TestCase
   def test_to_c_read_consecutive
     program = ',,,,,'
     assert_nil(MindFreak.check(program))
+    eof_zero = "int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  (*(pointer)) = c == EOF ? 0 : c;\n  return 0;\n}"
+    eof_minus_one = "for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}"
+    eof_unchanged = "int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  if(c != EOF) (*(pointer)) = c;\n  return 0;\n}"
     # Default tape
     assert_equal(
-      "#{c_header}for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
+      c_header << eof_zero,
+      MindFreak.to_c(program)
+    )
+    assert_equal(
+      c_header << eof_minus_one,
       MindFreak.to_c(program, MindFreak::TAPE_DEFAULT_SIZE, -1)
     )
     assert_equal(
-      "#{c_header}int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  (*(pointer)) = c == EOF ? 0 : c;\n  return 0;\n}",
-      MindFreak.to_c(program)
+      c_header << eof_unchanged,
+      MindFreak.to_c(program, MindFreak::TAPE_DEFAULT_SIZE, nil)
     )
     # User tape
     tape = [0,0]
     assert_equal(
-      "#{c_header(2, tape.join(', '))}for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}",
+      c_header(2, tape.join(', ')) << eof_zero,
+      MindFreak.to_c(program, tape)
+    )
+    assert_equal(
+      c_header(2, tape.join(', ')) << eof_minus_one,
       MindFreak.to_c(program, tape, -1)
     )
     assert_equal(
-      "#{c_header(2, tape.join(', '))}int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  (*(pointer)) = c == EOF ? 0 : c;\n  return 0;\n}",
-      MindFreak.to_c(program, tape)
+      c_header(2, tape.join(', ')) << eof_unchanged,
+      MindFreak.to_c(program, tape, nil)
     )
   end
 

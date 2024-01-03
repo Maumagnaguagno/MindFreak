@@ -72,12 +72,12 @@ In bold what is supported by this project:
 - Bytecode2 mode (uses optimized bytecode to achieve even more speed-up)
 - Ruby mode (transform optimized bytecode to ruby and eval to get even more speed)
 - C mode works like Ruby mode with fixed size tape and cells
-- Custom EOF, ``0`` is the default (C is faster with ``-1``)
+- Custom EOF, ``0`` is the default (C is faster with ``-1``), ``unchanged``
 - Output tape when interrupted (except C mode)
 
 ## Execution
 ```
-ruby MindFreak.rb filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=500] [EOF=0]
+ruby MindFreak.rb filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=500] [EOF=0|-1|any integer|unchanged]
 ```
 
 The current implementation expects a program filename, execution mode, tape bounds and EOF value.
@@ -169,9 +169,10 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 - Apr 2023
   - Dead jump elimination
   - C tape
+- Jan 2024
+  - Support unchanged cell by EOF
 
 ## ToDo's
-- Support unchanged cell by EOF
 - Step-by-step/interactive mode, breakpoint
 - Add examples
 
