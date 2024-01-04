@@ -9,7 +9,7 @@ class Rorschach < Test::Unit::TestCase
   HELLO = ',,,.,.,..,.>.'
 
   def test_attributes
-    [:pointer, :input, :input=, :output, :output=, :debug, :debug=].each {|att| assert_respond_to(MindFreak, att)}
+    [:pointer, :debug=].each {|att| assert_respond_to(MindFreak, att)}
   end
 
   #-----------------------------------------------
@@ -72,34 +72,34 @@ class Rorschach < Test::Unit::TestCase
     # Using StringIO to simulate input/output
     program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('  Helo')
-    MindFreak.output = StringIO.new
+    input = StringIO.new('  Helo')
+    output = StringIO.new
     assert_nil(MindFreak.check(program))
-    MindFreak.run_interpreter(program, tape)
+    MindFreak.run_interpreter(program, tape, 0, input, output)
     assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
-    assert_equal('  Helo', MindFreak.input.string)
-    assert_equal('Hello!', MindFreak.output.string)
+    assert_equal('  Helo', input.string)
+    assert_equal('Hello!', output.string)
   end
 
   def test_run_interpreter_io_read_eof
     # Consider any integer as EOF
     program = ','
     tape = [0]
-    MindFreak.input = StringIO.new
+    input = StringIO.new
     assert_nil(MindFreak.check(program))
-    MindFreak.run_interpreter(program, tape)
+    MindFreak.run_interpreter(program, tape, 0, input)
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
-    MindFreak.run_interpreter(program, tape, 255)
+    assert_equal('', input.string)
+    MindFreak.run_interpreter(program, tape, 255, input)
     assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
-    MindFreak.run_interpreter(program, tape = [], nil)
+    assert_equal('', input.string)
+    MindFreak.run_interpreter(program, tape = [], nil, input)
     assert_equal([], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
+    assert_equal('', input.string)
   end
 
   #-----------------------------------------------
@@ -132,34 +132,34 @@ class Rorschach < Test::Unit::TestCase
     # Using StringIO to simulate input/output
     program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('  Helo')
-    MindFreak.output = StringIO.new
+    input = StringIO.new('  Helo')
+    output = StringIO.new
     assert_nil(MindFreak.check(program))
-    MindFreak.run_bytecode(program, tape)
+    MindFreak.run_bytecode(program, tape, 0, input, output)
     assert_equal([111, 33], tape)
     assert_equal(1, MindFreak.pointer)
-    assert_equal('  Helo', MindFreak.input.string)
-    assert_equal('Hello!', MindFreak.output.string)
+    assert_equal('  Helo', input.string)
+    assert_equal('Hello!', output.string)
   end
 
   def test_run_bytecode_io_read_eof
     # Consider any integer as EOF
     program = ','
     tape = [0]
-    MindFreak.input = StringIO.new
+    input = StringIO.new
     assert_nil(MindFreak.check(program))
-    MindFreak.run_bytecode(program, tape)
+    MindFreak.run_bytecode(program, tape, 0, input)
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
-    MindFreak.run_bytecode(program, tape, 255)
+    assert_equal('', input.string)
+    MindFreak.run_bytecode(program, tape, 255, input)
     assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
-    MindFreak.run_bytecode(program, tape = [], nil)
+    assert_equal('', input.string)
+    MindFreak.run_bytecode(program, tape = [], nil, input)
     assert_equal([], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
+    assert_equal('', input.string)
   end
 
   #-----------------------------------------------
@@ -192,34 +192,34 @@ class Rorschach < Test::Unit::TestCase
     # Using StringIO to simulate input/output
     program = HELLO.dup
     tape = [0, 33]
-    MindFreak.input = StringIO.new('  Helo')
-    MindFreak.output = StringIO.new
+    input = StringIO.new('  Helo')
+    output = StringIO.new
     assert_nil(MindFreak.check(program))
-    MindFreak.run_bytecode2(program, tape)
+    MindFreak.run_bytecode2(program, tape, 0, input, output)
     assert_equal([111, 33], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('  Helo', MindFreak.input.string)
-    assert_equal('Hello!', MindFreak.output.string)
+    assert_equal('  Helo', input.string)
+    assert_equal('Hello!', output.string)
   end
 
   def test_run_bytecode2_io_read_eof
     # Consider any integer as EOF
     program = ','
     tape = [0]
-    MindFreak.input = StringIO.new
+    input = StringIO.new
     assert_nil(MindFreak.check(program))
-    MindFreak.run_bytecode2(program, tape)
+    MindFreak.run_bytecode2(program, tape, 0, input)
     assert_equal([0], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
-    MindFreak.run_bytecode2(program, tape, 255)
+    assert_equal('', input.string)
+    MindFreak.run_bytecode2(program, tape, 255, input)
     assert_equal([255], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
-    MindFreak.run_bytecode2(program, tape = [], nil)
+    assert_equal('', input.string)
+    MindFreak.run_bytecode2(program, tape = [], nil, input)
     assert_equal([], tape)
     assert_equal(0, MindFreak.pointer)
-    assert_equal('', MindFreak.input.string)
+    assert_equal('', input.string)
   end
 
   #-----------------------------------------------
@@ -857,9 +857,9 @@ class Rorschach < Test::Unit::TestCase
       MindFreak.optimize(MindFreak.bytecode(program))
     )
     # Using StringIO to simulate output
-    MindFreak.output = StringIO.new
-    MindFreak.run_interpreter(program, Array.new(10, 0))
-    assert_equal('Hello World!', MindFreak.output.string)
+    output = StringIO.new
+    MindFreak.run_interpreter(program, Array.new(10, 0), 0, nil, output)
+    assert_equal('Hello World!', output.string)
   end
 
   def test_bytecode_mandelbrot
@@ -873,7 +873,7 @@ class Rorschach < Test::Unit::TestCase
     assert_equal(4115, bytecode.size)
     assert_equal(2177, MindFreak.optimize(bytecode).size)
     # Compare output
-    File.write(file_c, MindFreak.to_c(program, MindFreak::TAPE_DEFAULT_SIZE, -1))
+    File.write(file_c, MindFreak.to_c(program, MindFreak::TAPE_DEFAULT_SIZE))
     ['gcc', 'clang'].each {|cc| assert_equal(MANDELBROT, `./#{file_exe}`) if system("#{cc} #{file_c} -o #{file_exe} -O2 -s")}
   ensure
     File.delete(file_c) if File.exist?(file_c)

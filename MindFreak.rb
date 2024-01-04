@@ -11,7 +11,7 @@ module MindFreak
   extend self
 
   attr_reader :pointer
-  attr_accessor :input, :output, :debug
+  attr_writer :debug
 
   HELP = "MindFreak filename.bf [mode=interpreter|bytecode|bytecode2|rb|c] [bounds=#{TAPE_DEFAULT_SIZE = 500}] [EOF=0|-1|any integer|unchanged]"
 
@@ -25,9 +25,6 @@ module MindFreak
   JUMPBACK  = ?].ord
 
   MULTIPLY  = ?*.ord
-
-  @input  = STDIN
-  @output = STDOUT
 
   #-----------------------------------------------
   # Check
@@ -45,7 +42,7 @@ module MindFreak
   # Run interpreter
   #-----------------------------------------------
 
-  def run_interpreter(program, tape, eof = 0)
+  def run_interpreter(program, tape, eof = 0, input = STDIN, output = STDOUT)
     program_size = program.size
     program_counter = -1
     @pointer = 0
@@ -61,9 +58,9 @@ module MindFreak
       when BACKWARD
         @pointer -= 1
       when WRITE
-        @output.putc(tape[@pointer])
+        output.putc(tape[@pointer])
       when READ
-        tape[@pointer] = @input.getbyte || eof || next
+        tape[@pointer] = input.getbyte || eof || next
       when JUMP
         if tape[@pointer] == 0
           control = 1
@@ -83,7 +80,7 @@ module MindFreak
   # Run bytecode
   #-----------------------------------------------
 
-  def run_bytecode(program, tape, eof = 0)
+  def run_bytecode(program, tape, eof = 0, input = STDIN, output = STDOUT)
     # Bytecode interpreter does not support optimizations
     bytecode = bytecode(program)
     program_size = bytecode.size
@@ -98,10 +95,10 @@ module MindFreak
       when FORWARD # Pointer
         @pointer += arg
       when WRITE # Write
-        arg > 1 ? @output.print(tape[@pointer].chr * arg) : @output.putc(tape[@pointer])
+        arg > 1 ? output.print(tape[@pointer].chr * arg) : output.putc(tape[@pointer])
       when READ # Read
-        @input.read(arg - 1)
-        tape[@pointer] = @input.getbyte || eof || next
+        input.read(arg - 1)
+        tape[@pointer] = input.getbyte || eof || next
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer] == 0
       when JUMPBACK # Return unless zero
@@ -115,7 +112,7 @@ module MindFreak
   # Run bytecode2
   #-----------------------------------------------
 
-  def run_bytecode2(program, tape, eof = 0)
+  def run_bytecode2(program, tape, eof = 0, input = STDIN, output = STDOUT)
     # Bytecode2 interpreter support optimizations
     bytecode = optimize(bytecode(program), tape[0] == 0)
     program_size = bytecode.size
@@ -135,10 +132,10 @@ module MindFreak
         @pointer += arg
       when WRITE # Write
         c = tape[offset ? offset + @pointer : @pointer]
-        arg > 1 ? @output.print(c.chr * arg) : @output.putc(c)
+        arg > 1 ? output.print(c.chr * arg) : output.putc(c)
       when READ # Read
-        @input.read(arg - 1)
-        tape[offset ? offset + @pointer : @pointer] = @input.getbyte || eof || next
+        input.read(arg - 1)
+        tape[offset ? offset + @pointer : @pointer] = input.getbyte || eof || next
       when JUMP # Jump if zero
         program_counter = arg if tape[@pointer] == 0
       when JUMPBACK # Return unless zero

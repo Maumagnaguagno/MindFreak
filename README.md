@@ -89,18 +89,17 @@ The main of this project is just an example of the API, all modes can be execute
 ## API
 [**MindFreak**](MindFreak.rb) is a module with 4 attributes:
 - ``attr_reader :pointer``, with the position of the current cell for interpreted execution modes, ``nil`` is the default.
-- ``attr_accessor :input``, read external data from an object that responds to ``getbyte`` and ``read``, ``STDIN`` is the default.
-- ``attr_accessor :output``, write external data to an object that responds to ``putc`` and ``print``, ``STDOUT`` is the default.
-- ``attr_accessor :debug``, print warnings when assigned to anything but ``false`` or ``nil``, ``nil`` is the default.
+- ``attr_writer :debug``, print warnings when assigned to anything but ``false`` or ``nil``, ``nil`` is the default.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
+Input and output can be redirected from STDIN/STDOUT to objects that respond to getbyte/read and putc/print, respectively, such as a StringIO object.
 - ``check(program)`` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns ``nil``.
-- ``run_interpreter(program, tape, eof = 0)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
-- ``run_bytecode(program, tape, eof = 0)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
-- ``run_bytecode2(program, tape, eof = 0)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
-- ``to_ruby(program, tape = TAPE_DEFAULT_SIZE, eof = 0, input = 'STDIN', output = 'STDOUT')`` returns a string with a equivalent Ruby program. If tape is Array or Hash the string will not contain tape and pointer declaration so ``eval`` will use external variables, otherwise tape is interpreted as size.
-- ``to_c(program, tape = TAPE_DEFAULT_SIZE, eof = 0, type = 'unsigned int')`` returns a string with a equivalent C program. The type contains the cell type being used. If no bounded tape is provided, tape is interpreted as size.
+- ``run_interpreter(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
+- ``run_bytecode(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ``run_bytecode2(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
+- ``to_ruby(program, tape = TAPE_DEFAULT_SIZE, eof = 0, input = 'STDIN', output = 'STDOUT')`` returns a String with a equivalent Ruby program. If tape is Array or Hash the string will not contain tape and pointer declaration so ``eval`` will use external variables, otherwise tape is interpreted as size.
+- ``to_c(program, tape = TAPE_DEFAULT_SIZE, eof = 0, type = 'unsigned int')`` returns a String with an equivalent C program. The type contains the cell type being used. If no bounded tape is provided, tape is interpreted as size.
 - ``bytecode(program)`` returns an Array with the bytecodes.
 - ``optimize(bytecode, blank_tape = false)`` returns an Array with the optimized bytecodes, which can be further optimized if the tape is blank.
 
