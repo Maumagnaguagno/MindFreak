@@ -158,7 +158,7 @@ module MindFreak
 
   def to_ruby(program, tape = TAPE_DEFAULT_SIZE, eof = 0, input = 'STDIN', output = 'STDOUT')
     # Tape definition
-    code = tape.instance_of?(Array) || tape.instance_of?(Hash) ? '' : tape == 0 ? "tape = Hash.new(0)\npointer = 0" : "tape = Array.new(#{tape},0)\npointer = 0"
+    code = tape.instance_of?(Array) || tape.instance_of?(Hash) ? '' : tape > 0 ? "tape = Array.new(#{tape},0)\npointer = 0" : "tape = Hash.new(0)\npointer = 0"
     indent = "\n"
     pointer = 0
     # Match bytecode
