@@ -87,9 +87,9 @@ An unbounded tape is slower and C mode will use the default size to allocate the
 The main of this project is just an example of the API, all modes can be executed in sequence.
 
 ## API
-[**MindFreak**](MindFreak.rb) is a module with 4 attributes:
-- ``attr_reader :pointer``, with the position of the current cell for interpreted execution modes, ``nil`` is the default.
-- ``attr_writer :debug``, print warnings when assigned to anything but ``false`` or ``nil``, ``nil`` is the default.
+[**MindFreak**](MindFreak.rb) is a module with 2 attributes:
+- ``attr_reader :pointer``, position of the current cell for interpreted execution modes.
+- ``attr_writer :debug``, print bytecode size when enabled.
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
@@ -100,7 +100,7 @@ Input and output can be redirected from STDIN/STDOUT to objects that respond to 
 - ``run_bytecode2(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the optimized bytecode interpreter, reading from input, writing to output while using the provided tape.
 - ``to_ruby(program, tape = TAPE_DEFAULT_SIZE, eof = 0, input = 'STDIN', output = 'STDOUT')`` returns a String with a equivalent Ruby program. If tape is Array or Hash the string will not contain tape and pointer declaration so ``eval`` will use external variables, otherwise tape is interpreted as size.
 - ``to_c(program, tape = TAPE_DEFAULT_SIZE, eof = 0, type = 'unsigned int')`` returns a String with an equivalent C program. The type contains the cell type being used. If no bounded tape is provided, tape is interpreted as size.
-- ``bytecode(program)`` returns an Array with the bytecodes.
+- ``bytecode(program)`` returns an Array with basic bytecodes.
 - ``optimize(bytecode, blank_tape = false)`` returns an Array with the optimized bytecodes, which can be further optimized if the tape is blank.
 
 The basic bytecode is described by the tuple ``[instruction, argument]``, in which:
