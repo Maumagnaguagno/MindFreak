@@ -62,7 +62,7 @@ In bold what is supported by this project:
 - How the input happens (**IO object**, **read from terminal**)
 - How the output happens (**IO object**, **write to terminal**)
 - Unknown instructions (**ignore**, halt, extended instructions)
-- EOF (**any integer**, unchanged)
+- EOF (**any integer**, **unchanged**)
 
 ### Support
 - Bounded (fast Array) or unbounded (slow Hash) tape
@@ -93,7 +93,7 @@ The main of this project is just an example of the API, all modes can be execute
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
-Input and output can be redirected from STDIN/STDOUT to objects that respond to getbyte/read and putc/print, respectively, such as a StringIO object.
+Input and output can be redirected from STDIN/STDOUT to objects that respond to ``getbyte``/``read`` and ``putc``/``print``, respectively, such as a StringIO object.
 - ``check(program)`` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns ``nil``.
 - ``run_interpreter(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
 - ``run_bytecode(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
