@@ -225,17 +225,17 @@ module MindFreak
         code << "#{indent}pointer += #{arg};"
       when WRITE # Write
         c = "putchar(*(pointer#{"+#{offset}" if offset}));"
-        code << "#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i; --i) #{c}" : c}"
+        code << "#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i--;) #{c}" : c}"
       when READ # Read
-        code << "#{indent}for(unsigned int i = #{arg-1}; i; --i) getchar();" if arg > 1
+        code << "#{indent}for(unsigned int i = #{arg-1}; i--;) getchar();" if arg > 1
         case eof
         when nil
-          code << "#{indent}c = getchar();#{indent}if(c != EOF) (*(pointer#{"+#{offset}" if offset})) = c;"
+          code << "#{indent}if((c = getchar()) != EOF) (*(pointer#{"+#{offset}" if offset})) = c;"
           eof_variable ||= "\n  int c;"
         when -1
           code << "#{indent}(*(pointer#{"+#{offset}" if offset})) = getchar();"
         else
-          code << "#{indent}c = getchar();#{indent}(*(pointer#{"+#{offset}" if offset})) = c == EOF ? #{eof} : c;"
+          code << "#{indent}(*(pointer#{"+#{offset}" if offset})) = (c = getchar()) != EOF ? c : #{eof};"
           eof_variable ||= "\n  int c;"
         end
       when JUMP # Jump if zero

@@ -439,9 +439,9 @@ class Rorschach < Test::Unit::TestCase
   def test_to_c_read_consecutive
     program = ',,,,,'
     assert_nil(MindFreak.check(program))
-    eof_zero = "int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  (*(pointer)) = c == EOF ? 0 : c;\n  return 0;\n}"
-    eof_minus_one = "for(unsigned int i = 4; i; --i) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}"
-    eof_unchanged = "int c;\n  for(unsigned int i = 4; i; --i) getchar();\n  c = getchar();\n  if(c != EOF) (*(pointer)) = c;\n  return 0;\n}"
+    eof_zero = "int c;\n  for(unsigned int i = 4; i--;) getchar();\n  (*(pointer)) = (c = getchar()) != EOF ? c : 0;\n  return 0;\n}"
+    eof_minus_one = "for(unsigned int i = 4; i--;) getchar();\n  (*(pointer)) = getchar();\n  return 0;\n}"
+    eof_unchanged = "int c;\n  for(unsigned int i = 4; i--;) getchar();\n  if((c = getchar()) != EOF) (*(pointer)) = c;\n  return 0;\n}"
     # Default tape
     assert_equal(
       c_header << eof_zero,
