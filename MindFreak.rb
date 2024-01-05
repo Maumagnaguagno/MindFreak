@@ -453,7 +453,7 @@ if $0 == __FILE__
         file_c = "#{filename}.c"
         file_exe = "./#{filename}.exe"
         t = Time.now.to_f
-        File.write(file_c, MindFreak.to_c(program, tape, eof))
+        File.write(file_c, MindFreak.to_c(program, bounds, eof))
         if ['gcc', 'clang'].any? {|cc| system("#{cc} #{file_c} -o #{file_exe} -O2 -s")}
           puts "Compilation time: #{Time.now.to_f - t}s"
           # Execute
