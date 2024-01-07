@@ -313,7 +313,7 @@ module MindFreak
 
   def optimize(bytecode, blank_tape = false)
     # Dead code elimination
-    bytecode.shift(bytecode[0][1]+1) if blank_tape and bytecode[0][0] == JUMP and not bytecode[1][0] == INCREMENT && bytecode[2][0] == JUMPBACK
+    bytecode.shift(bytecode[0][1]+1) if blank_tape and bytecode[0] and bytecode[0][0] == JUMP and bytecode[1][0] != INCREMENT || bytecode[2][0] != JUMPBACK
     clear = [INCREMENT, 0, nil, true]
     memory = Hash.new(0)
     i = -1
