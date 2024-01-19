@@ -104,10 +104,10 @@ Input and output can be redirected from STDIN/STDOUT to objects that respond to 
 - ``optimize(bytecode, blank_tape = false)`` returns an Array with the optimized bytecodes, which can be further optimized if the tape is blank.
 
 The basic bytecode is described by the tuple ``[instruction, argument]``, in which:
-- **instruction** corresponds to the byte value of <kbd>+</kbd><kbd><</kbd><kbd>.</kbd><kbd>,</kbd><kbd>[</kbd><kbd>]</kbd>;
+- **instruction** corresponds to the byte value of <kbd>+</kbd><kbd>></kbd><kbd>.</kbd><kbd>,</kbd><kbd>[</kbd><kbd>]</kbd>;
 - **argument** corresponds to the amount of times this instruction is used or the jump index in case of <kbd>[</kbd> or <kbd>]</kbd>.
 
-Note that <kbd>-</kbd> and <kbd>></kbd> are represented by their counterparts with negative arguments.
+Note that <kbd>-</kbd> and <kbd><</kbd> are represented by their counterparts with negative arguments.
 
 The extended bytecode replaces <kbd>></kbd> with offset, adds a multiply instruction, defined by <kbd>*</kbd>, and more information to each bytecode.
 It is described by the tuple ``[instruction, argument, offset, assign, multiplier]``, in which:
@@ -171,6 +171,7 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   - C tape
 - Jan 2024
   - Support unchanged cell by EOF
+  - Remove forward from extended bytecode
 
 ## ToDo's
 - Step-by-step/interactive mode, breakpoint

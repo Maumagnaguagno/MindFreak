@@ -7,6 +7,9 @@ class Rorschach < Test::Unit::TestCase
   ASSIGN = '[-]+'
   SUM = '[->+<] Subtract one from first cell; add to the second; repeat until first cell is zero'
   HELLO = ',,,.,.,..,.>.'
+  HELLO_WORLD = '>+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.>>>
+               ++++++++[<++++>-]<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++
+               .------.--------.>>+.'
 
   def test_attributes
     [:pointer, :debug=].each {|att| assert_respond_to(MindFreak, att)}
@@ -102,6 +105,15 @@ class Rorschach < Test::Unit::TestCase
     assert_equal('', input.string)
   end
 
+  def test_run_interpreter_hello_world
+    # Using StringIO to simulate output
+    program = HELLO_WORLD.dup
+    output = StringIO.new
+    assert_nil(MindFreak.check(program))
+    MindFreak.run_interpreter(program, Array.new(10, 0), 0, nil, output)
+    assert_equal('Hello World!', output.string)
+  end
+
   #-----------------------------------------------
   # Run bytecode
   #-----------------------------------------------
@@ -160,6 +172,15 @@ class Rorschach < Test::Unit::TestCase
     assert_equal([], tape)
     assert_equal(0, MindFreak.pointer)
     assert_equal('', input.string)
+  end
+
+  def test_run_bytecode_hello_world
+    # Using StringIO to simulate output
+    program = HELLO_WORLD.dup
+    output = StringIO.new
+    assert_nil(MindFreak.check(program))
+    MindFreak.run_bytecode(program, Array.new(10, 0), 0, nil, output)
+    assert_equal('Hello World!', output.string)
   end
 
   #-----------------------------------------------
@@ -222,6 +243,15 @@ class Rorschach < Test::Unit::TestCase
     assert_equal('', input.string)
   end
 
+  def test_run_bytecode2_hello_world
+    # Using StringIO to simulate output
+    program = HELLO_WORLD.dup
+    output = StringIO.new
+    assert_nil(MindFreak.check(program))
+    MindFreak.run_bytecode2(program, Array.new(10, 0), 0, nil, output)
+    assert_equal('Hello World!', output.string)
+  end
+
   #-----------------------------------------------
   # Eval Ruby
   #-----------------------------------------------
@@ -230,7 +260,6 @@ class Rorschach < Test::Unit::TestCase
     # Clear first cell and add one
     program = ASSIGN.dup
     tape = [10]
-    # Ruby evaluation mode requires local pointer
     pointer = 0
     assert_nil(MindFreak.check(program))
     assert_equal(ASSIGN, program)
@@ -243,7 +272,6 @@ class Rorschach < Test::Unit::TestCase
     # Sum elements of tape
     program = SUM.dup
     tape = [5, 10]
-    # Ruby evaluation mode requires local pointer
     pointer = 0
     assert_nil(MindFreak.check(program))
     assert_equal('[->+<]', program)
@@ -258,7 +286,6 @@ class Rorschach < Test::Unit::TestCase
     output = StringIO.new
     program = HELLO.dup
     tape = [0, 33]
-    # Ruby evaluation mode requires local pointer
     pointer = 0
     assert_nil(MindFreak.check(program))
     # Connect input and output local variables
@@ -274,7 +301,6 @@ class Rorschach < Test::Unit::TestCase
     input = StringIO.new
     program = ','
     tape = [0]
-    # Ruby evaluation mode requires local pointer
     pointer = 0
     assert_nil(MindFreak.check(program))
     eval(MindFreak.to_ruby(program, tape, 0, 'input'))
@@ -289,6 +315,16 @@ class Rorschach < Test::Unit::TestCase
     assert_equal([255], tape)
     assert_equal(0, pointer)
     assert_equal('', input.string)
+  end
+
+  def test_eval_ruby_hello_world
+    # Using StringIO to simulate output
+    output = StringIO.new
+    program = HELLO_WORLD.dup
+    tape = Array.new(10, 0)
+    assert_nil(MindFreak.check(program))
+    eval(MindFreak.to_ruby(program, tape, 0, nil, 'output'))
+    assert_equal('Hello World!', output.string)
   end
 
   #-----------------------------------------------
@@ -813,10 +849,30 @@ class Rorschach < Test::Unit::TestCase
     )
   end
 
+  def test_bytecode_jump_with_offset
+    # Bytecode uses [instruction, argument]
+    bytecode = MindFreak.bytecode('>>[>]')
+    assert_equal(
+      [
+        [MindFreak::FORWARD,    2],
+        [MindFreak::JUMP,       3],
+        [MindFreak::FORWARD,    1],
+        [MindFreak::JUMPBACK,   1]
+      ],
+      bytecode
+    )
+    # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
+    assert_equal(
+      [
+        [MindFreak::JUMP,       1, 2],
+        [MindFreak::JUMPBACK,   0, 1]
+      ],
+      MindFreak.optimize(bytecode)
+    )
+  end
+
   def test_bytecode_hello_world
-    program = '>+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.>>>
-    ++++++++[<++++>-]<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++
-    .------.--------.>>+.'
+    program = HELLO_WORLD.dup
     # Remove spaces and newlines
     assert_nil(MindFreak.check(program))
     # Optimized bytecode uses [instruction, argument, offset, assign, multiplier]
@@ -856,10 +912,6 @@ class Rorschach < Test::Unit::TestCase
       ],
       MindFreak.optimize(MindFreak.bytecode(program))
     )
-    # Using StringIO to simulate output
-    output = StringIO.new
-    MindFreak.run_interpreter(program, Array.new(10, 0), 0, nil, output)
-    assert_equal('Hello World!', output.string)
   end
 
   def test_bytecode_mandelbrot
