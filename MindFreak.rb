@@ -128,8 +128,6 @@ module MindFreak
         else
           tape[offset ? offset + @pointer : @pointer] += arg
         end
-      when FORWARD # Pointer
-        @pointer += arg
       when WRITE # Write
         c = tape[offset ? offset + @pointer : @pointer]
         arg > 1 ? output.print(c.chr * arg) : output.putc(c)
@@ -137,8 +135,10 @@ module MindFreak
         input.read(arg - 1)
         tape[offset ? offset + @pointer : @pointer] = input.getbyte || eof || next
       when JUMP # Jump if zero
+        @pointer += offset if offset
         program_counter = arg if tape[@pointer] == 0
       when JUMPBACK # Return unless zero
+        @pointer += offset if offset
         program_counter = arg if tape[@pointer] != 0
       when MULTIPLY # Multiplication
         offset = offset ? offset + @pointer : @pointer
@@ -166,8 +166,6 @@ module MindFreak
       case c
       when INCREMENT # Tape
         code << "#{indent}tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] #{'+' unless assign}= #{arg}"
-      when FORWARD # Pointer
-        code << (pointer ? "#{indent}pointer = #{pointer += arg}" : "#{indent}pointer += #{arg}")
       when WRITE # Write
         c = "tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}]"
         code << "#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
@@ -179,10 +177,12 @@ module MindFreak
           code << "#{indent}c = #{input}.getbyte and tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] = c"
         end
       when JUMP # Jump if zero
-        pointer = nil
+        code << (pointer ? "#{indent}pointer = #{pointer += offset}" : "#{indent}pointer += #{offset}") if offset
         code << "#{indent}while tape[pointer] != 0"
         indent << '  '
+        pointer = nil
       when JUMPBACK # Return unless zero
+        code << (pointer ? "#{indent}pointer = #{pointer += offset}" : "#{indent}pointer += #{offset}") if offset
         indent.slice!(-2,2)
         code << "#{indent}end"
       when MULTIPLY # Multiplication
@@ -221,8 +221,6 @@ module MindFreak
       case c
       when INCREMENT # Tape
         code << "#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless assign}= #{arg};"
-      when FORWARD # Pointer
-        code << "#{indent}pointer += #{arg};"
       when WRITE # Write
         c = "putchar(*(pointer#{"+#{offset}" if offset}));"
         code << "#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i--;) #{c}" : c}"
@@ -239,9 +237,11 @@ module MindFreak
           eof_variable ||= "\n  int c;"
         end
       when JUMP # Jump if zero
+        code << "#{indent}pointer += #{offset};" if offset
         code << "#{indent}while(*pointer){"
         indent << '  '
       when JUMPBACK # Return unless zero
+        code << "#{indent}pointer += #{offset};" if offset
         indent.slice!(-2,2)
         code << "#{indent}}"
       when MULTIPLY # Multiplication
@@ -370,9 +370,9 @@ module MindFreak
       # Offset >+< <.>
       when FORWARD
         if next_inst = bytecode[i+1]
+          # Original instruction uses offset
+          offset = bytecode[i]
           if next_inst[0] < JUMP
-            # Original instruction uses offset
-            offset = bytecode[i]
             (bytecode[i] = next_inst.equal?(clear) ? clear.dup : next_inst)[2] = offset[1]
             # Push offset to next forward if they do not nullify
             if bytecode[i+2] and bytecode[i+2][0] == FORWARD
@@ -382,6 +382,10 @@ module MindFreak
             else bytecode[i+1] = offset
             end
             i -= 1 if next_inst[0] == MULTIPLY
+          else
+            next_inst[2] = offset[1]
+            bytecode.delete_at(i)
+            i -= 1
           end
         # Remove last forward
         else bytecode.pop
