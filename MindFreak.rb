@@ -477,7 +477,9 @@ if $0 == __FILE__
     when 'rb'
       puts "\nTape: #{tape}", "Pointer: #{pointer}"
     end
+    exit(130)
   rescue
     puts $!, $@
+    exit(2)
   end
 end
