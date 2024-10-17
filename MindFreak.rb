@@ -222,8 +222,7 @@ module MindFreak
       when INCREMENT # Tape
         code << "#{indent}*(pointer#{"+#{offset}" if offset}) #{'+' unless assign}= #{arg};"
       when WRITE # Write
-        c = "putchar(*(pointer#{"+#{offset}" if offset}));"
-        code << "#{indent}#{arg > 1 ? "for(unsigned int i = #{arg}; i--;) #{c}" : c}"
+        code << "#{indent}#{"for(unsigned int i = #{arg}; i--;) " if arg > 1}putchar(*(pointer#{"+#{offset}" if offset}));"
       when READ # Read
         code << "#{indent}for(unsigned int i = #{arg-1}; i--;) getchar();" if arg > 1
         case eof
