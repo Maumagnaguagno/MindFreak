@@ -168,7 +168,7 @@ module MindFreak
         code << "#{indent}tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] #{'+' unless assign}= #{arg}"
       when WRITE # Write
         c = "tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}]"
-        code << "#{indent}#{arg > 1 ? "#{output}.print #{c}.chr * #{arg}" : "#{output}.putc #{c}"}"
+        code << "#{indent}#{output}#{arg > 1 ? ".print #{c}.chr * #{arg}" : ".putc #{c}"}"
       when READ # Read
         code << "#{indent}#{input}.read(#{arg - 1})" if arg > 1
         if eof
