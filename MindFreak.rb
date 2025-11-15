@@ -43,7 +43,7 @@ module MindFreak
   #-----------------------------------------------
 
   def run_interpreter(program, tape, eof = 0, input = STDIN, output = STDOUT)
-    program_size = program.size
+    program_size = program.bytesize
     program_counter = -1
     @pointer = 0
     # Interpreter
