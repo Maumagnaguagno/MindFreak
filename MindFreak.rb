@@ -71,7 +71,7 @@ module MindFreak
           control = -1
           nil until (control += 92 - program.getbyte(program_counter = program.byterindex(/[\[\]]/, program_counter - 1))) == 0
         end
-      else raise "Unknown instruction: #{program[program_counter]} at position #{program_counter}"
+      else raise "Unknown instruction: #{program.getbyte(program_counter)} at position #{program_counter}"
       end
     end
   end
