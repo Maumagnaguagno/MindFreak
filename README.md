@@ -93,7 +93,7 @@ The main of this project is just an example of the API, all modes can be execute
 
 The methods require a String containing the program and an Array or Hash to be used as tape.
 The bytecode generated is an Array of Arrays and differ from the basic to the optimized version.
-Input and output can be redirected from STDIN/STDOUT to objects that respond to ``getbyte``/``read`` and ``putc``/``print``, respectively, such as a StringIO object.
+Input and output can be redirected from STDIN/STDOUT to objects that respond to ``getbyte``/``read`` and ``putc``/``write``, respectively, such as a StringIO object.
 - ``check(program)`` is used to sanitize the input program and check if brackets are balanced, modifies the program string, returns ``nil``.
 - ``run_interpreter(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the slow interpreter, reading from input, writing to output while using the provided tape.
 - ``run_bytecode(program, tape, eof = 0, input = STDIN, output = STDOUT)`` executes the bytecode interpreter, reading from input, writing to output while using the provided tape.
@@ -172,6 +172,8 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
 - Jan 2024
   - Support unchanged cell by EOF
   - Remove forward from extended bytecode
+- Apr 2026
+  - Retire versions older than 3.1
 
 ## ToDo's
 - Step-by-step/interactive mode, breakpoint

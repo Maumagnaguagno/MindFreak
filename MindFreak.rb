@@ -95,7 +95,7 @@ module MindFreak
       when FORWARD # Pointer
         @pointer += arg
       when WRITE # Write
-        arg > 1 ? output.print(tape[@pointer].chr * arg) : output.putc(tape[@pointer])
+        arg > 1 ? output.write(tape[@pointer].chr * arg) : output.putc(tape[@pointer])
       when READ # Read
         input.read(arg - 1)
         tape[@pointer] = input.getbyte || eof || next
@@ -130,7 +130,7 @@ module MindFreak
         end
       when WRITE # Write
         c = tape[offset ? offset + @pointer : @pointer]
-        arg > 1 ? output.print(c.chr * arg) : output.putc(c)
+        arg > 1 ? output.write(c.chr * arg) : output.putc(c)
       when READ # Read
         input.read(arg - 1)
         tape[offset ? offset + @pointer : @pointer] = input.getbyte || eof || next
@@ -168,7 +168,7 @@ module MindFreak
         code << "#{indent}tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}] #{'+' unless assign}= #{arg}"
       when WRITE # Write
         c = "tape[#{pointer ? offset ? offset + pointer : pointer : "pointer#{"+#{offset}" if offset}"}]"
-        code << "#{indent}#{output}#{arg > 1 ? ".print #{c}.chr * #{arg}" : ".putc #{c}"}"
+        code << "#{indent}#{output}#{arg > 1 ? ".write #{c}.chr * #{arg}" : ".putc #{c}"}"
       when READ # Read
         code << "#{indent}#{input}.read(#{arg - 1})" if arg > 1
         if eof
