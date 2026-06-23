@@ -173,7 +173,7 @@ The [tests](tests/rorschach.rb) include several examples and can be used as a gu
   - Support unchanged cell by EOF
   - Remove forward from extended bytecode
 - Apr 2026
-  - Retire versions older than 3.1
+  - Retire versions older than 3.2
 
 ## ToDo's
 - Step-by-step/interactive mode, breakpoint
