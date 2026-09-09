@@ -470,12 +470,7 @@ if $0 == __FILE__
       end
     end
   rescue Interrupt
-    case mode
-    when 'interpreter', 'bytecode', 'bytecode2'
-      puts "\nTape: #{tape}", "Pointer: #{MindFreak.pointer}"
-    when 'rb'
-      puts "\nTape: #{tape}", "Pointer: #{pointer}"
-    end
+    puts "\nTape: #{tape}", "Pointer: #{MindFreak.pointer || pointer}" if mode != 'c'
     exit(130)
   rescue
     puts $!, $@
